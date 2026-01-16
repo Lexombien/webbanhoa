@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import axios from 'axios';
 import sharp from 'sharp';
 import compression from 'compression'; // Quay lại Gzip chân ái
+import helmet from 'helmet'; // Bảo mật HTTP Headers
 
 
 // Get __dirname in ES module
@@ -15,6 +16,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// SECURITY HARDENING
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // Cho phép load ảnh từ domain khác nếu cần
+    contentSecurityPolicy: false // Tạm tắt CSP để tránh lỗi load script/ảnh inline (React)
+}));
+
 app.use(compression()); // Kích hoạt Gzip (không bao giờ lỗi)
 app.enable('trust proxy'); // Cần thiết khi chạy sau Nginx (để nhận diện đúng https)
 const PORT = process.env.PORT || 3001; // Ưu tiên PORT từ env
