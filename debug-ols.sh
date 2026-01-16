@@ -1,44 +1,53 @@
 #!/bin/bash
 
 # =================================================================
-# SCRIPT DEBUG & FORCE CONFIG OLS (FINAL WEAPON)
+# SCRIPT DEBUG v2: FORCE OVERWRITE CONFIG (FIX ORDER)
 # =================================================================
 
 DOMAIN="lemyloi.work.gd"
-OLS_ROOT="/usr/local/lsws"
+VHOST_CONF="/usr/local/lsws/conf/vhosts/$DOMAIN/$DOMAIN.conf"
 
-echo "🔍 Đang truy tìm file cấu hình thật sự của $DOMAIN..."
+echo "🔧 Đang cấu hình lại (Force Overwrite) cho file: $VHOST_CONF"
 
-# Tìm tất cả file .conf có chứa tên miền
-FOUND_FILES=$(grep -r "$DOMAIN" $OLS_ROOT/conf --include="*.conf" | cut -d: -f1 | sort | uniq)
+# Backup
+cp "$VHOST_CONF" "$VHOST_CONF.bak_v2"
 
-if [ -z "$FOUND_FILES" ]; then
-    echo "❌ Không tìm thấy file config nào chứa $DOMAIN"
-    exit 1
+# Lấy SSL nếu có
+SSL_KEY="/etc/letsencrypt/live/$DOMAIN/privkey.pem"
+SSL_CERT="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
+SSL_BLOCK=""
+
+if [ -f "$SSL_KEY" ]; then
+    SSL_BLOCK="
+vhssl  {
+  keyFile                 $SSL_KEY
+  certFile                $SSL_CERT
+  certChain               1
+  sslProtocol             24
+  enableSpdy              1
+  enableQuic              1
+}"
 fi
 
-echo "✅ Tìm thấy các file sau:"
-echo "$FOUND_FILES"
+# Ghi đè file với thứ tự chuẩn xác
+# 1. Extprocessor
+# 2. Context /api/ (Quan trọng: phải đứng trước /)
+# 3. Context / (Frontend)
+# 4. Rewrite rules
 
-# Hàm inject proxy
-inject_proxy() {
-    local FILE=$1
-    echo "⚡ Đang tiêm cấu hình Proxy vào: $FILE"
-    
-    # Backup
-    cp "$FILE" "$FILE.bak_debug"
-    
-    # Kiểm tra xem đã có node-backend chưa
-    if grep -q "extprocessor node-backend" "$FILE"; then
-        echo "   -> File này đã có config node-backend. Bỏ qua."
-    else
-        # Chèn extprocessor vào đầu context đầu tiên hoặc cuối file
-        # Đây là cách chèn an toàn nhất: Thêm vào cuối file nhưng trước dấu đóng } cuối cùng nếu có
-        # Hoặc đơn giản là append vào cuối. OLS config khá linh hoạt.
-        
-        cat >> "$FILE" <<EOF
+cat > "$VHOST_CONF" <<EOF
+docRoot                   \$VH_ROOT/html/dist
+vhDomain                  $DOMAIN
+vhAliases                 www.$DOMAIN
+adminEmails               admin@$DOMAIN
+enableGzip                1
+enableIpGeo               1
 
-# --- AUTO INJECTED BY DEBUG SCRIPT ---
+index  {
+  useServer               0
+  indexFiles              index.html
+}
+
 extprocessor node-backend {
   type                    proxy
   address                 127.0.0.1:3001
@@ -54,27 +63,26 @@ context /api/ {
   handler                 node-backend
   addDefaultCharset       off
 }
-# -------------------------------------
-EOF
-        echo "   -> Đã chèn xong."
-    fi
+
+context / {
+  location                \$VH_ROOT/html/dist/
+  allowBrowse             1
+  indexFiles              index.html
+  
+  rewrite  {
+    enable                1
+    inherit               1
+    RewriteFile           .htaccess
+  }
 }
 
-# Duyệt qua các file tìm được và inject
-for FILE in $FOUND_FILES; do
-    # Chỉ inject vào file vhost, không inject vào httpd_config.conf chính
-    if [[ "$FILE" == *"vhosts"* ]]; then
-        inject_proxy "$FILE"
-    fi
-done
+rewrite  {
+  enable                  1
+  autoLoadHtaccess        1
+}
 
-# Restart Backend cho chắc
-echo "🔄 Restarting Backend..."
-cd $OLS_ROOT/$DOMAIN/html
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-pm2 delete web-backend 2>/dev/null
-pm2 start server.js --name "web-backend"
+$SSL_BLOCK
+EOF
 
 # Restart OLS
 echo "🔄 Restarting OpenLiteSpeed..."
@@ -84,4 +92,4 @@ else
     service lsws restart
 fi
 
-echo "✅ DONE! Hãy thử lại."
+echo "✅ Đã ghi đè cấu hình chuẩn. Vui lòng thử lại!"
