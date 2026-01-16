@@ -802,7 +802,8 @@ app.get('/api/health', (req, res) => {
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // QUAN TRỌNG: Tất cả request không phải API sẽ trả về index.html (để React Router xử lý)
-app.get('*', (req, res) => {
+// Dùng app.use thay vì app.get('*') để tránh lỗi PathError trong Express mới
+app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
