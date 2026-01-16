@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # =================================================================
-# OLS AUTO CONFIGURATOR - "MẠNH TAY"
-# Can thiệp trực tiếp vào file XML Configuration của OpenLiteSpeed
+# OLS AUTO CONFIGURATOR - "MẠNH TAY" (V2 - Smart Search)
 # =================================================================
 
 # Màu sắc
@@ -13,11 +12,10 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 echo -e "${BLUE}===================================================${NC}"
-echo -e "${BLUE}   OLS AUTO CONFIG - HARDCORE MODE                 ${NC}"
+echo -e "${BLUE}   OLS AUTO CONFIG - HARDCORE MODE (V2)            ${NC}"
 echo -e "${BLUE}===================================================${NC}"
 
 # 1. TÌM KIẾM FILE CẤU HÌNH
-# Giả định đường dẫn CyberPanel/OLS chuẩn
 OLS_ROOT="/usr/local/lsws"
 CONF_DIR="$OLS_ROOT/conf/vhosts"
 
@@ -29,40 +27,73 @@ if [ -z "$DOMAIN_NAME" ]; then
     exit 1
 fi
 
-# Tìm file config vhost
-# CyberPanel thường lưu ở: /usr/local/lsws/conf/vhosts/<domain>/vhost.conf (hoặc tương tự)
-VHOST_CONF="$CONF_DIR/$DOMAIN_NAME/vhost.conf"
-
-if [ ! -f "$VHOST_CONF" ]; then
-    echo -e "${RED}❌ Không tìm thấy file config tại: $VHOST_CONF${NC}"
-    echo "Đang thử tìm kiếm..."
-    FOUND_PATH=$(find $OLS_ROOT -name "vhost.conf" | grep "$DOMAIN_NAME" | head -n 1)
+# Hàm tìm file config
+find_config() {
+    local TARGET_NAME=$1
+    # Check 1: CyberPanel style /conf/vhosts/domain/vhost.conf
+    local path1="$CONF_DIR/$TARGET_NAME/vhost.conf"
+    # Check 2: Standard OLS style /conf/vhosts/name/vhconf.conf
+    local path2="$CONF_DIR/$TARGET_NAME/vhconf.conf"
     
-    if [ -z "$FOUND_PATH" ]; then
-        echo -e "${RED}❌ Hoàn toàn không tìm thấy config cho domain này. Bạn đã tạo Website trong CyberPanel/OLS chưa?${NC}"
-        exit 1
+    if [ -f "$path1" ]; then
+        echo "$path1"
+    elif [ -f "$path2" ]; then
+        echo "$path2"
     else
-        VHOST_CONF="$FOUND_PATH"
-        echo -e "${GREEN}✅ Đã tìm thấy: $VHOST_CONF${NC}"
+        echo ""
+    fi
+}
+
+VHOST_CONF=$(find_config "$DOMAIN_NAME")
+
+if [ -z "$VHOST_CONF" ]; then
+    echo -e "${RED}❌ Không tìm thấy config cho domain '$DOMAIN_NAME'.${NC}"
+    echo -e "\n🔍 Đang liệt kê các Virtual Host hiện có trên VPS:"
+    echo "------------------------------------------------"
+    ls -1 "$CONF_DIR"
+    echo "------------------------------------------------"
+    
+    echo -e "${YELLOW}[?] Hãy nhập chính xác TÊN THƯ MỤC VHOST (trong danh sách trên) tương ứng với web này:${NC}"
+    read -r VHOST_DIR_NAME
+    
+    if [ -z "$VHOST_DIR_NAME" ]; then
+        echo "❌ Đã hủy bỏ."
+        exit 1
+    fi
+    
+    VHOST_CONF=$(find_config "$VHOST_DIR_NAME")
+    
+    if [ -z "$VHOST_CONF" ]; then
+        echo -e "${RED}❌ Vẫn không tìm thấy file config (vhost.conf hoặc vhconf.conf) trong $VHOST_DIR_NAME${NC}"
+        exit 1
     fi
 fi
+
+echo -e "${GREEN}✅ Đã tìm thấy file cấu hình: $VHOST_CONF${NC}"
 
 # 2. BACKUP
 echo -e "\n${GREEN}[1/3] Backup cấu hình cũ...${NC}"
 cp "$VHOST_CONF" "$VHOST_CONF.bak_$(date +%s)"
-echo "✅ Đã backup thành công."
 
 # 3. TẠO NỘI DUNG CONFIG MỚI
-# Chúng ta sẽ giữ lại các phần cơ bản nhưng ghi đè phần Context và Root
-# Lưu ý: Đây là template chuẩn cho dự án React + Node.js trên OLS
+echo -e "\n${GREEN}[2/3] Ghi đè cấu hình...${NC}"
 
-echo -e "\n${GREEN}[2/3] Ghi đè cấu hình chuẩn...${NC}"
+# Xác định đường dẫn SSL tự động
+SSL_KEY="/etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem"
+SSL_CERT="/etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem"
 
-# Đường dẫn tuyệt đối
-DOC_ROOT="$OLS_ROOT/$DOMAIN_NAME/html/dist"
-UPLOADS_DIR="$OLS_ROOT/$DOMAIN_NAME/html/uploads"
+# Nếu không có SSL LetsEncrypt, thử tìm fallback hoặc để trống
+if [ ! -f "$SSL_KEY" ]; then
+    echo "⚠️  Không tìm thấy SSL tại đường dẫn Let's Encrypt mặc định."
+    # Fallback to self-signed or default if needed, or keep existing paths from backup if we were smarter.
+    # For now, warn user.
+fi
 
-# Nội dung config mới
+# GHI ĐÈ FILE CONFIG
+# Lưu ý: $VH_ROOT trong OLS tương ứng với thư mục Home của Vhost
+# Ví dụ: /usr/local/lsws/lemyloi.work.gd/
+# DocRoot nên set là $VH_ROOT/html/dist
+
 cat > "$VHOST_CONF" <<EOF
 docRoot                   \$VH_ROOT/html/dist
 vhDomain                  $DOMAIN_NAME
@@ -76,13 +107,13 @@ index  {
   indexFiles              index.html
 }
 
-errorlog $OLS_ROOT/logs/$DOMAIN_NAME.error_log {
+errorlog \$VH_ROOT/logs/$DOMAIN_NAME.error_log {
   useServer               0
   logLevel                ERROR
   rollingSize             10M
 }
 
-accesslog $OLS_ROOT/logs/$DOMAIN_NAME.access_log {
+accesslog \$VH_ROOT/logs/$DOMAIN_NAME.access_log {
   useServer               0
   logFormat               "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\""
   logHeaders              5
@@ -114,8 +145,6 @@ context /api/ {
 context /uploads/ {
   location                \$VH_ROOT/html/uploads/
   allowBrowse             1
-  rewrite  {
-  }
   addDefaultCharset       off
 }
 
@@ -137,8 +166,8 @@ rewrite  {
 }
 
 vhssl  {
-  keyFile                 /etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem
-  certFile                /etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem
+  keyFile                 $SSL_KEY
+  certFile                $SSL_CERT
   certChain               1
   sslProtocol             24
   enableSpdy              1
@@ -146,25 +175,15 @@ vhssl  {
 }
 EOF
 
-echo "✅ Đã ghi cấu hình mới bao gồm:"
-echo "   - Document Root -> dist"
-echo "   - Proxy /api/ -> 127.0.0.1:3001"
-echo "   - Uploads folder map -> html/uploads"
-echo "   - SSL Paths (Let's Encrypt)"
+echo "✅ Đã ghi cấu hình mới!"
 
 # 4. RESTART OLS
 echo -e "\n${GREEN}[3/3] Khởi động lại OpenLiteSpeed...${NC}"
-
-# Thử restart bằng lệnh lsws
 if [ -f "/usr/local/lsws/bin/lswsctrl" ]; then
     /usr/local/lsws/bin/lswsctrl restart
-    echo "✅ OLS Restarted via lswsctrl"
 else
-    # Thử restart service
     service lsws restart
-    echo "✅ OLS Restarted via Service"
 fi
 
 echo -e "\n${BLUE}===================================================${NC}"
-echo -e "${YELLOW}🔥 XONG! HÃY THỬ TRUY CẬP WEBSITE NGAY.${NC}"
-echo -e "${BLUE}===================================================${NC}"
+echo -e "${YELLOW}🔥 XONG! Config đã được cập nhật.${NC}"
