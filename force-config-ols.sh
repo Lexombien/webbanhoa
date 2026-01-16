@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =================================================================
-# OLS AUTO CONFIGURATOR - "MẠNH TAY" (V2 - Smart Search)
+# OLS AUTO CONFIGURATOR - "MẠNH TAY" (V3 - Fix File Name)
 # =================================================================
 
 # Màu sắc
@@ -12,10 +12,9 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 echo -e "${BLUE}===================================================${NC}"
-echo -e "${BLUE}   OLS AUTO CONFIG - HARDCORE MODE (V2)            ${NC}"
+echo -e "${BLUE}   OLS AUTO CONFIG - HARDCORE MODE (V3)            ${NC}"
 echo -e "${BLUE}===================================================${NC}"
 
-# 1. TÌM KIẾM FILE CẤU HÌNH
 OLS_ROOT="/usr/local/lsws"
 CONF_DIR="$OLS_ROOT/conf/vhosts"
 
@@ -27,20 +26,35 @@ if [ -z "$DOMAIN_NAME" ]; then
     exit 1
 fi
 
-# Hàm tìm file config
+# Hàm tìm file config thông minh hơn
 find_config() {
     local TARGET_NAME=$1
-    # Check 1: CyberPanel style /conf/vhosts/domain/vhost.conf
-    local path1="$CONF_DIR/$TARGET_NAME/vhost.conf"
-    # Check 2: Standard OLS style /conf/vhosts/name/vhconf.conf
-    local path2="$CONF_DIR/$TARGET_NAME/vhconf.conf"
+    local DIR_PATH="$CONF_DIR/$TARGET_NAME"
+
+    # 1. Chuẩn OLS (vhconf.conf)
+    if [ -f "$DIR_PATH/vhconf.conf" ]; then
+        echo "$DIR_PATH/vhconf.conf"
+        return
+    fi
     
-    if [ -f "$path1" ]; then
-        echo "$path1"
-    elif [ -f "$path2" ]; then
-        echo "$path2"
-    else
-        echo ""
+    # 2. Chuẩn CyberPanel (vhost.conf)
+    if [ -f "$DIR_PATH/vhost.conf" ]; then
+        echo "$DIR_PATH/vhost.conf"
+        return
+    fi
+    
+    # 3. Chuẩn Custom (tên file = tên domain.conf)
+    if [ -f "$DIR_PATH/$TARGET_NAME.conf" ]; then
+        echo "$DIR_PATH/$TARGET_NAME.conf"
+        return
+    fi
+
+    # 4. Tìm bất kỳ file .conf nào trong thư mục đó (trừ file backup)
+    # Lấy file .conf đầu tiên tìm thấy
+    local ANY_CONF=$(find "$DIR_PATH" -maxdepth 1 -name "*.conf" | head -n 1)
+    if [ ! -z "$ANY_CONF" ]; then
+        echo "$ANY_CONF"
+        return
     fi
 }
 
@@ -48,51 +62,55 @@ VHOST_CONF=$(find_config "$DOMAIN_NAME")
 
 if [ -z "$VHOST_CONF" ]; then
     echo -e "${RED}❌ Không tìm thấy config cho domain '$DOMAIN_NAME'.${NC}"
-    echo -e "\n🔍 Đang liệt kê các Virtual Host hiện có trên VPS:"
-    echo "------------------------------------------------"
+    echo -e "\n🔍 Đang liệt kê các Virtual Host hiện có:"
     ls -1 "$CONF_DIR"
-    echo "------------------------------------------------"
     
-    echo -e "${YELLOW}[?] Hãy nhập chính xác TÊN THƯ MỤC VHOST (trong danh sách trên) tương ứng với web này:${NC}"
+    echo -e "${YELLOW}[?] Nhập tên thư mục VHOST:${NC}"
     read -r VHOST_DIR_NAME
     
     if [ -z "$VHOST_DIR_NAME" ]; then
-        echo "❌ Đã hủy bỏ."
         exit 1
     fi
     
     VHOST_CONF=$(find_config "$VHOST_DIR_NAME")
     
     if [ -z "$VHOST_CONF" ]; then
-        echo -e "${RED}❌ Vẫn không tìm thấy file config (vhost.conf hoặc vhconf.conf) trong $VHOST_DIR_NAME${NC}"
+        echo -e "${RED}❌ Vẫn không tìm thấy file .conf nào trong folder đó!${NC}"
         exit 1
     fi
 fi
 
 echo -e "${GREEN}✅ Đã tìm thấy file cấu hình: $VHOST_CONF${NC}"
 
-# 2. BACKUP
-echo -e "\n${GREEN}[1/3] Backup cấu hình cũ...${NC}"
+# BACKUP
 cp "$VHOST_CONF" "$VHOST_CONF.bak_$(date +%s)"
 
-# 3. TẠO NỘI DUNG CONFIG MỚI
-echo -e "\n${GREEN}[2/3] Ghi đè cấu hình...${NC}"
-
-# Xác định đường dẫn SSL tự động
+# XÁC ĐỊNH SLL
 SSL_KEY="/etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem"
 SSL_CERT="/etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem"
+SSL_BLOCK=""
 
-# Nếu không có SSL LetsEncrypt, thử tìm fallback hoặc để trống
-if [ ! -f "$SSL_KEY" ]; then
-    echo "⚠️  Không tìm thấy SSL tại đường dẫn Let's Encrypt mặc định."
-    # Fallback to self-signed or default if needed, or keep existing paths from backup if we were smarter.
-    # For now, warn user.
+if [ -f "$SSL_KEY" ]; then
+    SSL_BLOCK="
+vhssl  {
+  keyFile                 $SSL_KEY
+  certFile                $SSL_CERT
+  certChain               1
+  sslProtocol             24
+  enableSpdy              1
+  enableQuic              1
+}"
+else
+    # Giữ nguyên SSL cũ nếu tìm thấy trong file cũ
+    # (Đơn giản là warn user thôi, tránh làm hỏng SSL tự tạo)
+    echo "⚠️  Không thấy SSL Let's Encrypt. Web sẽ chạy HTTP hoặc dùng SSL cũ."
 fi
 
 # GHI ĐÈ FILE CONFIG
-# Lưu ý: $VH_ROOT trong OLS tương ứng với thư mục Home của Vhost
-# Ví dụ: /usr/local/lsws/lemyloi.work.gd/
-# DocRoot nên set là $VH_ROOT/html/dist
+# QUAN TRỌNG: $VH_ROOT là biến nội bộ của OLS
+# docRoot trỏ về dist
+# context /api/ trỏ về 3001
+# context /uploads/ trỏ về folder uploads
 
 cat > "$VHOST_CONF" <<EOF
 docRoot                   \$VH_ROOT/html/dist
@@ -164,20 +182,12 @@ rewrite  {
   enable                  1
   autoLoadHtaccess        1
 }
-
-vhssl  {
-  keyFile                 $SSL_KEY
-  certFile                $SSL_CERT
-  certChain               1
-  sslProtocol             24
-  enableSpdy              1
-  enableQuic              1
-}
+$SSL_BLOCK
 EOF
 
-echo "✅ Đã ghi cấu hình mới!"
+echo "✅ Đã ghi đè cấu hình mới."
 
-# 4. RESTART OLS
+# RESTART
 echo -e "\n${GREEN}[3/3] Khởi động lại OpenLiteSpeed...${NC}"
 if [ -f "/usr/local/lsws/bin/lswsctrl" ]; then
     /usr/local/lsws/bin/lswsctrl restart
@@ -185,5 +195,4 @@ else
     service lsws restart
 fi
 
-echo -e "\n${BLUE}===================================================${NC}"
-echo -e "${YELLOW}🔥 XONG! Config đã được cập nhật.${NC}"
+echo -e "\n${YELLOW}🔥 XONG! Config đã cập nhật.${NC}"
