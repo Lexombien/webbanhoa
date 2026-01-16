@@ -797,6 +797,15 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// ==================== FRONTEND STATIC FILES ====================
+// Phục vụ file tĩnh từ thư mục dist (React App)
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// QUAN TRỌNG: Tất cả request không phải API sẽ trả về index.html (để React Router xử lý)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
 // ==================== START SERVER ====================
 
 // Listen trên 0.0.0.0 để cho phép truy cập từ tất cả IPs trong mạng
