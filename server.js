@@ -458,46 +458,27 @@ app.put('/api/rename-upload/:oldFilename', (req, res) => {
 
 // ==================== ZALO BOT WEBHOOK & TRACKING ====================
 
-// Zalo Bot configuration
-const BOT_TOKEN = process.env.BOT_TOKEN || '';
-const OWNER_ZALO_IDS = (process.env.OWNER_ZALO_IDS || process.env.OWNER_ZALO_ID || '')
-    .split(',')
-    .map(id => id.trim())
-    .filter(id => id.length > 0);  // Support multiple IDs
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'tientienflorist-secret-2026';
-const SHOP_NAME = process.env.SHOP_NAME || 'Tientienflorist';
+// ==================== ZALO BOT TRACKING ====================
 
-// Webhook endpoint - nhận events từ Zalo
-app.post('/api/zalo-webhook', (req, res) => {
+// Helper function to get Zalo configuration from Database
+const getZaloConfig = () => {
     try {
-        const secretToken = req.headers['x-bot-api-secret-token'];
+        const db = JSON.parse(fs.readFileSync(dbFile, 'utf8'));
+        const settings = db.settings || {};
 
-        // Verify secret token
-        if (secretToken !== WEBHOOK_SECRET) {
-            console.log('⚠️ Webhook bị từ chối - Sai secret token');
-            return res.status(403).json({ message: 'Unauthorized' });
-        }
-
-        const body = req.body;
-        console.log('\n📨 ===== WEBHOOK NHẬN TỪ ZALO =====');
-        console.log(JSON.stringify(body, null, 2));
-
-        // In ra User ID để admin lấy
-        if (body.result?.message?.from?.id) {
-            console.log('\n🆔 ===== THÔNG TIN USER =====');
-            console.log(`USER ID: ${body.result.message.from.id}`);
-            console.log(`Tên: ${body.result.message.from.display_name}`);
-            console.log(`\n📋 Copy User ID này vào file .env:`);
-            console.log(`OWNER_ZALO_ID=${body.result.message.from.id}`);
-            console.log('================================\n');
-        }
-
-        res.json({ message: 'Success' });
+        return {
+            botToken: settings.zaloBotToken || '',
+            ownerIds: (settings.zaloAdminIds || '')
+                .split(',')
+                .map(id => id.trim())
+                .filter(id => id.length > 0),
+            shopName: process.env.SHOP_NAME || 'Tientienflorist'
+        };
     } catch (error) {
-        console.error('❌ Lỗi webhook:', error);
-        res.status(500).json({ message: 'Error' });
+        console.error('Error reading Zalo config:', error);
+        return { botToken: '', ownerIds: [], shopName: 'Tientienflorist' };
     }
-});
+};
 
 // Tracking endpoint - nhận click từ website
 app.post('/api/track-click', async (req, res) => {
@@ -518,8 +499,10 @@ app.post('/api/track-click', async (req, res) => {
             timeStyle: 'medium'
         });
 
+        const { botToken, ownerIds, shopName } = getZaloConfig();
+
         // Format message
-        let message = `🔔 [${SHOP_NAME}] THÔNG BÁO CLICK\n\n`;
+        let message = `🔔 [${shopName}] THÔNG BÁO CLICK\n\n`;
         message += `📦 Sản phẩm: ${productName}\n`;
         message += `🔗 Link: ${productUrl}\n`;
         message += `⏰ Thời gian: ${time}\n`;
@@ -531,13 +514,13 @@ app.post('/api/track-click', async (req, res) => {
         console.log(`IP: ${userIp}`);
 
         // Gửi thông báo đến TẤT CẢ chủ shop/nhân viên qua Zalo Bot
-        if (OWNER_ZALO_IDS.length > 0 && BOT_TOKEN) {
-            console.log(`📤 Gửi thông báo đến ${OWNER_ZALO_IDS.length} người...`);
+        if (ownerIds.length > 0 && botToken) {
+            console.log(`📤 Gửi thông báo đến ${ownerIds.length} người...`);
 
-            for (const ownerId of OWNER_ZALO_IDS) {
+            for (const ownerId of ownerIds) {
                 try {
                     await axios.post(
-                        `https://bot-api.zaloplatforms.com/bot${BOT_TOKEN}/sendMessage`,
+                        `https://bot-api.zaloplatforms.com/bot${botToken}/sendMessage`,
                         {
                             chat_id: ownerId,
                             text: message
@@ -550,7 +533,7 @@ app.post('/api/track-click', async (req, res) => {
                 }
             }
         } else {
-            console.log('⚠️ Chưa cấu hình OWNER_ZALO_IDS hoặc BOT_TOKEN');
+            console.log('⚠️ Chưa cấu hình Zalo Bot Token hoặc Admin IDs trong Admin Settings');
         }
 
         res.json({ success: true, message: 'Tracked successfully' });
@@ -656,15 +639,17 @@ app.post('/api/submit-order', async (req, res) => {
         console.log(`💾 Đã lưu đơn hàng ${orderNumber} vào database`);
 
         // 2. GỬI THÔNG BÁO ZALO
+        const { botToken, ownerIds } = getZaloConfig();
+
         // Gửi đơn hàng đến TẤT CẢ chủ shop/nhân viên qua Zalo Bot
-        if (OWNER_ZALO_IDS.length > 0 && BOT_TOKEN) {
-            console.log(`📤 Gửi đơn hàng đến ${OWNER_ZALO_IDS.length} người...`);
+        if (ownerIds.length > 0 && botToken) {
+            console.log(`📤 Gửi đơn hàng đến ${ownerIds.length} người...`);
 
             let sentCount = 0;
-            for (const ownerId of OWNER_ZALO_IDS) {
+            for (const ownerId of ownerIds) {
                 try {
                     await axios.post(
-                        `https://bot-api.zaloplatforms.com/bot${BOT_TOKEN}/sendMessage`,
+                        `https://bot-api.zaloplatforms.com/bot${botToken}/sendMessage`,
                         {
                             chat_id: ownerId,
                             text: message
@@ -695,7 +680,7 @@ app.post('/api/submit-order', async (req, res) => {
                 });
             }
         } else {
-            console.log('⚠️ Chưa cấu hình OWNER_ZALO_IDS hoặc BOT_TOKEN');
+            console.log('⚠️ Chưa cấu hình Zalo Bot Token hoặc Admin IDs');
             // Vẫn response success vì đã lưu order
             res.json({
                 success: true,

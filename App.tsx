@@ -1642,7 +1642,6 @@ const App: React.FC = () => {
                               💰 Hiển thị giá sản phẩm
                             </label>
                             <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                              Tắt nếu muốn khách hỏi giá qua Zalo
                             </p>
                           </div>
                           <label className="relative inline-flex items-center cursor-pointer">
@@ -1658,6 +1657,55 @@ const App: React.FC = () => {
                             />
                             <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-pink"></div>
                           </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Zalo Bot Settings */}
+                    <div className="glass p-6 rounded-2xl">
+                      <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                        🤖 Cấu hình Zalo Bot (Gửi thông báo đơn hàng)
+                      </label>
+                      <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                        Điền thông tin để kích hoạt tính năng gửi tin nhắn tự động qua Zalo Bot
+                      </p>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                            Bot Token
+                          </label>
+                          <input
+                            type="password"
+                            className="glass-input w-full rounded-2xl px-5 py-3 text-sm"
+                            placeholder="Nhập Access Token của Bot..."
+                            value={globalSettings.zaloBotToken || ''}
+                            onChange={(e) => {
+                              const newSettings = { ...globalSettings, zaloBotToken: e.target.value };
+                              setGlobalSettings(newSettings);
+                              localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                            }}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                            Admin Zalo IDs (Người nhận thông báo)
+                          </label>
+                          <input
+                            type="text"
+                            className="glass-input w-full rounded-2xl px-5 py-3 text-sm"
+                            placeholder="Vd: 84900000001, 84900000002 (Cách nhau dấu phẩy)"
+                            value={globalSettings.zaloAdminIds || ''}
+                            onChange={(e) => {
+                              const newSettings = { ...globalSettings, zaloAdminIds: e.target.value };
+                              setGlobalSettings(newSettings);
+                              localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                            }}
+                          />
+                          <p className="text-xs mt-2" style={{ color: 'var(--text-secondary)' }}>
+                            * Nhập User ID Zalo của những người cần nhận thông báo đơn hàng mới.
+                          </p>
                         </div>
                       </div>
                     </div>

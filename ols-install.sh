@@ -2,7 +2,7 @@
 
 # =================================================================
 # OLS ONE-CLICK DEPLOY SCRIPT (OPENLITESPEED SPECIAL EDITION)
-# VERSION: FIX UPLOADS CONTEXT PATH ($VH_ROOT issue)
+# VERSION: SYMLINK FIX (BEST FOR IMAGES)
 # =================================================================
 
 # Màu sắc
@@ -15,7 +15,7 @@ NC='\033[0m'
 clear
 echo -e "${BLUE}===================================================${NC}"
 echo -e "${BLUE}  🚀 OLS ONE-CLICK DEPLOY (For Tientien Florist)  ${NC}"
-echo -e "${BLUE}     Phiên bản FIX LỖI ẢNH (UPLOADS)               ${NC}"
+echo -e "${BLUE}     Phiên bản FIX ẢNH BẰNG SYMLINK (TRIỆT ĐỂ)    ${NC}"
 echo -e "${BLUE}===================================================${NC}"
 echo ""
 
@@ -54,14 +54,12 @@ echo -e "\n${BLUE}ℹ️  Thư mục hiện tại: ${YELLOW}$CURRENT_DIR${NC}"
 echo "Bấm Enter để BẮT ĐẦU CÀI ĐẶT..."
 read -r
 
-# Hàm ghi config (SỬA LỖI ĐƯỜNG DẪN TẠI ĐÂY)
+# Hàm ghi config CONFIG (ĐƠN GIẢN HÓA VÌ ĐÃ DÙNG SYMLINK)
 write_ols_config() {
     local SSL_BLOCK_CONTENT=$1
-    # QUAN TRỌNG: Dùng đường dẫn tuyệt đối cho uploads location
-    # Thay vì $VH_ROOT, ta dùng thẳng /usr/local/lsws/$DOMAIN_NAME/html/uploads/
-    # Vì $VH_ROOT đôi khi bị hiểu sai trong context con.
     
-    local ABS_UPLOADS_PATH="/usr/local/lsws/$DOMAIN_NAME/html/uploads/"
+    # Ở đây KHÔNG CẦN Context /uploads/ nữa vì Symlink đã xử lý rồi
+    # OLS sẽ tự hiểu /uploads/ là file nằm trong dist/uploads (vốn là link)
     
     cat > "$VHOST_CONF" <<EOF
 docRoot                   \$VH_ROOT/html/dist
@@ -111,14 +109,6 @@ context /api/ {
   addDefaultCharset       off
 }
 
-context /uploads/ {
-  location                $ABS_UPLOADS_PATH
-  allowBrowse             1
-  addDefaultCharset       off
-  rewrite  {
-  }
-}
-
 context / {
   location                \$VH_ROOT/html/dist/
   allowBrowse             1
@@ -139,10 +129,73 @@ $SSL_BLOCK_CONTENT
 EOF
 }
 
-# 2. CÀI ĐẶT NODE & CODE (TÓM TẮT)
-# ... (Phần này giữ nguyên hoặc chạy nhanh nếu đã cài rồi)
+# =================================================================
+# 2. CÀI ĐẶT & BUILD
+# =================================================================
+# Load NVM & Install Node (Skipped specific check details for brevity)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
-# Tìm file config OLS
+if ! command -v node &> /dev/null; then
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    nvm install 20
+    nvm use 20
+fi
+
+if ! command -v pm2 &> /dev/null; then
+    npm install -g pm2
+    pm2 startup
+fi
+
+# Tạo .env
+cat > .env <<EOF
+PORT=3001
+ADMIN_USERNAME=$ADMIN_USER
+ADMIN_PASSWORD=$ADMIN_PASS
+BOT_TOKEN=
+OWNER_ZALO_IDS=
+WEBHOOK_SECRET=tientienflorist-secret-2026
+SHOP_NAME=Tientienflorist
+EOF
+
+# Build
+if [ -d "node_modules" ]; then rm -rf node_modules; fi
+npm install --legacy-peer-deps
+npm run build
+mkdir -p uploads
+
+# =================================================================
+# 🔥 QUAN TRỌNG: TẠO SYMLINK CHO UPLOADS
+# =================================================================
+echo -e "\n${GREEN}[Step] Tạo Symlink cho thư mục Uploads...${NC}"
+# Đảm bảo folder gốc tồn tại & có quyền 777
+chmod -R 777 "$CURRENT_DIR/uploads"
+
+# Vào dist, xóa uploads ảo và link tới uploads thật
+cd "$CURRENT_DIR/dist"
+rm -rf uploads
+ln -s ../uploads uploads
+echo "✅ Đã tạo Symlink: dist/uploads -> ../uploads"
+
+# Quay lại root
+cd "$CURRENT_DIR"
+
+# Start Backend
+if pm2 list | grep -q "web-backend"; then
+    pm2 reload web-backend --update-env
+else
+    pm2 start server.js --name "web-backend"
+    pm2 save
+fi
+
+
+# =================================================================
+# 3. CONFIG OLS
+# =================================================================
+echo -e "\n${GREEN}[5/5] Cấu hình OpenLiteSpeed...${NC}"
+
 OLS_ROOT="/usr/local/lsws"
 CONF_DIR="$OLS_ROOT/conf/vhosts"
 VHOST_CONF=""
@@ -161,16 +214,12 @@ if [ -z "$VHOST_CONF" ]; then
     exit 1
 fi
 
-echo -e "\n${GREEN}[Step] Cấu hình OpenLiteSpeed (Fix Context Uploads)...${NC}"
-echo "File Config: $VHOST_CONF"
-
-# Kiểm tra SSL Key có sẵn không để tái sử dụng
+# SSL Setup & Config Write (Simplified)
 SSL_KEY="/etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem"
 SSL_CERT="/etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem"
 SSL_BLOCK=""
 
 if [ -f "$SSL_KEY" ]; then
-    echo "✅ Phát hiện SSL đã cài đặt, sẽ giữ nguyên."
     SSL_BLOCK="
 vhssl  {
   keyFile                 $SSL_KEY
@@ -182,11 +231,8 @@ vhssl  {
 }"
 else
     if [ "$SETUP_SSL" == "y" ]; then
-        # ...Logic cài SSL (Giống phiên bản trước)...
-        echo "Cài SSL..."
-        certbot certonly --webroot -w "$CURRENT_DIR/dist" -d "$DOMAIN_NAME" --agree-tos --email "admin@$DOMAIN_NAME" --non-interactive --force-renewal
-        # Update SSL Paths
-        SSL_BLOCK="
+         certbot certonly --webroot -w "$CURRENT_DIR/dist" -d "$DOMAIN_NAME" --agree-tos --email "admin@$DOMAIN_NAME" --non-interactive --force-renewal
+         SSL_BLOCK="
 vhssl  {
   keyFile                 $SSL_KEY
   certFile                $SSL_CERT
@@ -198,14 +244,18 @@ vhssl  {
     fi
 fi
 
-# Ghi config
-write_ols_config "$SSL_BLOCK"
+# Config .htaccess for React
+cat > "$CURRENT_DIR/dist/.htaccess" <<EOF
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+EOF
 
-echo -e "\n${GREEN}[Step] Cấp quyền thư mục Uploads (777)...${NC}"
-# Đảm bảo OLS đọc được file
-chmod -R 777 /usr/local/lsws/$DOMAIN_NAME/html/uploads/
-# Hoặc nếu path khác
-chmod -R 777 "$CURRENT_DIR/uploads/"
+# Write main OLS config (No need for uploads context anymore due to Symlink)
+write_ols_config "$SSL_BLOCK"
 
 echo -e "\n${GREEN}[Step] Restart OLS...${NC}"
 if [ -f "/usr/local/lsws/bin/lswsctrl" ]; then
@@ -215,6 +265,5 @@ else
 fi
 
 echo -e "\n${BLUE}===================================================${NC}"
-echo -e "   🎉 ĐÃ FIX XONG LỖI ẢNH!${NC}"
-echo -e "   Hãy tải lại trang web và kiểm tra."
+echo -e "   🎉 TRIỂN KHAI THÀNH CÔNG (FULL FIX)!${NC}"
 echo -e "${BLUE}===================================================${NC}"
