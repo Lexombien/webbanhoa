@@ -67,8 +67,10 @@ if ! npm run build; then
     npm run build
 fi
 
-if [ ! -d "dist/index.html" ]; then
-    echo -e "${RED}❌ Lỗi: Build thất bại sau 2 lần thử.${NC}"
+if [ ! -f "dist/index.html" ]; then
+    echo -e "${RED}❌ Lỗi: Build thất bại sau 2 lần thử (Không thấy file dist/index.html).${NC}"
+    echo "🔍 Kiểm tra thư mục dist:"
+    ls -F dist/ 2>/dev/null
     exit 1
 fi
 echo -e "${GREEN}✅ Build Frontend thành công!${NC}"
