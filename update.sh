@@ -2,7 +2,7 @@
 
 # =================================================================
 # SCRIPT CẬP NHẬT CODE SIÊU TỐC (UPDATE ONLY)
-# Phiên bản: Fix lỗi 'vite: Permission denied'
+# Phiên bản: Fix triệt để EACCES (esbuild/vite permissions)
 # =================================================================
 
 # Màu sắc
@@ -26,23 +26,33 @@ git pull
 echo -e "\n${GREEN}[2/4] Install Dependencies...${NC}"
 npm install --legacy-peer-deps
 
-# 🔥 FIX LỖI QUYỀN THỰC THI CHO VITE 🔥
-echo -e "\n${GREEN}[Step] Cấp quyền thực thi cho node_modules/.bin...${NC}"
+# 🔥 SUPER FIX: CẤP QUYỀN THỰC THI CHO TOÀN BỘ BINARY TRONG NODE_MODULES 🔥
+# Đây là giải pháp mạnh tay nhất để sửa lỗi EACCES esbuild/vite
+echo -e "\n${GREEN}[Step] Fix quyền thực thi (chmod +x) cho node_modules...${NC}"
+
+# Cách 1: Cấp quyền cho toàn bộ file trong .bin
 chmod -R +x node_modules/.bin/
-# Cụ thể hơn cho vite
-if [ -f "node_modules/.bin/vite" ]; then
-    chmod +x node_modules/.bin/vite
+
+# Cách 2: Tìm và cấp quyền cho esbuild binary (quan trọng nhất)
+if [ -d "node_modules/@esbuild" ]; then
+    chmod -R +x node_modules/@esbuild
 fi
 
-# 3. Build React
+# Cách 3 (Dự phòng): Quét toàn bộ node_modules tìm file thực thi (hơi lâu nhưng chắc ăn)
+# find node_modules -type f -name "esbuild" -exec chmod +x {} \;
+# find node_modules -type f -name "vite" -exec chmod +x {} \;
+
+# 3. Build React (Thử lại)
 echo -e "\n${GREEN}[3/4] Build Frontend (React)...${NC}"
+# Đôi khi cần clean cache vite
+rm -rf node_modules/.vite
 npm run build
 
 # Check xem build có thành công không
-if [ ! -d "dist" ]; then
-    echo -e "${RED}❌ Lỗi: Build thất bại. Kiểm tra lại log.${NC}"
-else 
+if [ $? -eq 0 ]; then
     echo -e "✅ Build thành công."
+else
+    echo -e "${RED}❌ Lỗi: Build thất bại. Vui lòng cấp quyền thủ công: chmod -R 777 node_modules${NC}"
 fi
 
 # 4. Restart Backend
