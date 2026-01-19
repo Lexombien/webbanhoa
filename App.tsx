@@ -1949,438 +1949,588 @@ const App: React.FC = () => {
                 💡 <span className="font-semibold">Lưu ý:</span> Thay đổi sẽ được lưu tự động và áp dụng ngay lập tức.
               </div>
             </div>
-          )}
-        </section>
-
-        {/* QUẢN LÝ DANH MỤC */}
-        <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
-          <div
-            className="flex justify-between items-center mb-6 cursor-pointer group"
-            onClick={() => toggleSection('categories')}
-          >
-            <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
-              <span className="w-1.5 h-6 bg-gradient-pink rounded-full inline-block"></span>
-              Cấu trúc danh mục
-            </h3>
-            <button className="pill-button glass px-4 py-2 hover:glass-strong transition-all">
-              <svg
-                className={`w-5 h-5 transition-transform duration-300 ${expandedSections.categories ? 'rotate-180' : ''}`}
-                style={{ color: 'var(--primary-pink)' }}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
-
-          {expandedSections.categories && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-              <div className="flex gap-3 mb-6">
-                <input
-                  type="text"
-                  placeholder="Tên danh mục mới (Vd: Hoa tươi 20/10)..."
-                  className="glass-input flex-grow rounded-2xl px-5 py-3 text-sm"
-                  value={newCategoryName}
-                  onChange={e => setNewCategoryName(e.target.value)}
+          ) : activeTab === 'media' ? (
+            <>
+              <MediaLibrary
+                onImageDeleted={handleImageDeletedFromLibrary}
+                mediaMetadata={mediaMetadata}
+                setMediaMetadata={setMediaMetadata}
+              />
+            </>
+          ) : activeTab === 'css' ? (
+            <>
+              <section className="glass p-6 rounded-2xl">
+                <h3 className="text-xl font-bold mb-4 gradient-text">🎨 Tùy chỉnh CSS</h3>
+                <textarea
+                  value={globalSettings.customCSS}
+                  onChange={(e) => {
+                    const newSettings = { ...globalSettings, customCSS: e.target.value };
+                    setGlobalSettings(newSettings);
+                    localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                  }}
+                  className="glass-input w-full h-96 font-mono text-sm p-4 rounded-xl"
+                  placeholder="/* Nhập CSS tùy chỉnh của bạn tại đây */"
                 />
-                <button onClick={addCategory} className="pill-button bg-gradient-pink text-white px-8 py-3 text-sm font-bold shadow-lg hover-glow-pink">Thêm mục</button>
-              </div>
+              </section>
+            </>
+          ) : activeTab === 'analytics' ? (
+            <>
+              <AnalyticsDashboard
+                analyticsData={analyticsData}
+                products={products}
+              />
+            </>
+          ) : activeTab === 'orders' ? (
+            <>
+              <OrdersManagement />
+            </>
+          ) : null}
+        </main>
 
-              {/* Preview Button */}
-              <div className="mb-4 p-4 glass-gradient rounded-xl border border-white/40">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <svg className="w-5 h-5" style={{ color: 'var(--secondary-purple)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                    <div>
-                      <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Xem trước thứ tự danh mục</p>
-                      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Thứ tự này sẽ hiển thị trên trang chủ</p>
-                    </div>
-                  </div>
-                  <a
-                    href="#"
-                    target="_blank"
-                    className="pill-button bg-gradient-purple text-white px-4 py-2 text-xs font-bold shadow-md hover-glow-pink"
-                  >
-                    Mở trang chủ
-                  </a>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                {categories.map((cat, index) => {
-                  const productCount = products.filter(p => p.category === cat).length;
-                  return (
-                    <div
-                      key={cat}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, cat)}
-                      onDragEnd={handleDragEnd}
-                      onDragOver={handleDragOver}
-                      onDrop={(e) => handleDrop(e, cat)}
-                      className={`glass p-4 rounded-xl flex items-center gap-3 text-sm font-medium group hover:glass-strong hover:scale-[1.02] transition-all cursor-move shadow-md border-white/40 ${draggedCategory === cat ? 'opacity-50 scale-95' : ''
-                        }`}
-                    >
-                      {/* Drag Handle Icon */}
-                      <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5a2 2 0 100 4 2 2 0 000-4zM8 11a2 2 0 100 4 2 2 0 000-4zM8 17a2 2 0 100 4 2 2 0 000-4zM16 5a2 2 0 100 4 2 2 0 000-4zM16 11a2 2 0 100 4 2 2 0 000-4zM16 17a2 2 0 100 4 2 2 0 000-4z" />
-                      </svg>
-
-                      {/* Position Number */}
-                      <span className="w-8 h-8 bg-gradient-pink text-white rounded-xl flex items-center justify-center text-xs font-bold shadow-lg flex-shrink-0 glow-pink">
-                        {index + 1}
-                      </span>
-
-                      {/* Category Name */}
-                      <span className="flex-grow font-semibold" style={{ color: 'var(--text-primary)' }}>{cat}</span>
-
-                      {/* Product Count Badge */}
-                      <span className={`badge-glass px-3 py-1 text-xs font-bold flex-shrink-0 ${productCount > 0
-                        ? 'bg-gradient-soft text-green-700'
-                        : 'bg-white/20'
-                        }`} style={{ color: productCount > 0 ? 'var(--primary-pink)' : 'var(--text-secondary)' }}>
-                        {productCount} SP
-                      </span>
-
-                      {/* Reorder Buttons */}
-                      <div className="flex gap-1">
-                        <button
-                          onClick={() => moveCategoryUp(index)}
-                          disabled={index === 0}
-                          className={`p-2 rounded-lg transition-all ${index === 0
-                            ? 'text-neutral-200 cursor-not-allowed'
-                            : 'text-neutral-400 hover:text-blue-600 hover:bg-blue-50'
-                            }`}
-                          title="Di chuyển lên"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 15l7-7 7 7" /></svg>
-                        </button>
-                        <button
-                          onClick={() => moveCategoryDown(index)}
-                          disabled={index === categories.length - 1}
-                          className={`p-2 rounded-lg transition-all ${index === categories.length - 1
-                            ? 'text-neutral-200 cursor-not-allowed'
-                            : 'text-neutral-400 hover:text-blue-600 hover:bg-blue-50'
-                            }`}
-                          title="Di chuyển xuống"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
-                        </button>
-                      </div>
-
-                      {/* Settings Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingCategory(cat);
-                          setShowCategorySettingsModal(true);
-                        }}
-                        className="p-2 text-neutral-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all"
-                        title="Cài đặt danh mục"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      </button>
-
-                      {/* Delete Button */}
-                      <button
-                        onClick={() => deleteCategory(cat)}
-                        className="p-2 text-neutral-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-                        title="Xóa danh mục"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeWidth="2" strokeLinecap="round" /></svg>
-                      </button>
-                    </div>
-                  );
-                })}
-
-                {categories.length === 0 && (
-                  <div className="text-center py-8 text-neutral-400 text-sm">
-                    <svg className="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
-                    Chưa có danh mục nào. Thêm danh mục đầu tiên!
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </section>
-
-
-        {/* QUẢN LÝ NHANH SẢN PHẨM */}
-        <section>
-          <div
-            className="flex justify-between items-center mb-6 cursor-pointer group glass-strong p-4 rounded-2xl"
-            onClick={() => toggleSection('inventory')}
+        {/* Admin Modals and Floating Buttons */}
+        {activeTab === 'products' && (
+          <button
+            onClick={() => {
+              setEditingProduct({ title: '', category: categories[0] || '', images: [], switchInterval: 3000, aspectRatio: '3/4', originalPrice: 0, salePrice: 0 });
+              setShowEditModal(true);
+            }}
+            className="fixed bottom-8 right-8 z-50 bg-gradient-pink text-white w-16 h-16 rounded-full shadow-2xl hover-glow-pink flex items-center justify-center group hover:scale-110 active:scale-95 transition-all"
+            title="Thêm sản phẩm mới"
           >
-            <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
-              <span className="w-1.5 h-6 bg-gradient-sunset rounded-full inline-block"></span>
-              Kho hàng hiện tại ({products.length})
-            </h3>
-            <button className="pill-button glass px-4 py-2 hover:glass-strong transition-all">
-              <svg
-                className={`w-5 h-5 transition-transform duration-300 ${expandedSections.inventory ? 'rotate-180' : ''}`}
-                style={{ color: 'var(--primary-pink)' }}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+        )}
+
+        {showCategoryEditModal && editingCategory && (
+          <CategoryEditModal
+            categoryName={editingCategory}
+            displayName={categorySettings[editingCategory]?.displayName}
+            onSave={renameCategoryInSettings}
+            onClose={closeCategoryEditModal}
+          />
+        )}
+
+        {showCategorySettingsModal && editingCategory && (
+          <CategorySettingsModal
+            categoryName={editingCategory}
+            settings={categorySettings[editingCategory] || {
+              name: editingCategory,
+              itemsPerPage: 8,
+              paginationType: 'none',
+              imageTransition: 'fade',
+              imageInterval: 3000
+            }}
+            onUpdate={(updates) => updateCategorySettings(editingCategory, updates)}
+            onClose={() => setShowCategorySettingsModal(false)}
+            onRename={() => {
+              setShowCategorySettingsModal(false);
+              setShowCategoryEditModal(true);
+            }}
+          />
+        )}
+
+        {showEditModal && (
+          <ProductFormModal
+            product={editingProduct as FlowerProduct | null}
+            categories={categories}
+            onSave={handleAddOrUpdateProduct}
+            onCancel={closeEditModal}
+            onDelete={deleteProduct}
+            onUploadImage={handleUploadProductImage}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // GIAO DIỆN NGƯỜI DÙNG (TRANG CHỦ)
+  return (
+    <div className="min-h-screen bg-pattern">
+      <header className="blur-backdrop fixed top-0 left-0 right-0 z-50 border-b border-white/20">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.location.href = '/'}>
+            {/* Mobile Menu Button */}
+            <div className="lg:hidden">
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsMobileMenuOpen(true); }}
+                className="p-2 -ml-2 text-neutral-600 hover:text-rose-500 transition-colors"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+              </button>
+            </div>
+
+            {/* Logo/Brand */}
+            {globalSettings.logoUrl ? (
+              <>
+                <img
+                  src={globalSettings.logoUrl}
+                  alt={globalSettings.websiteName}
+                  className={`w-auto object-contain hidden sm:block ${globalSettings.logoSizeDesktop}`}
+                />
+                <img
+                  src={globalSettings.logoUrl}
+                  alt={globalSettings.websiteName}
+                  className={`w-auto object-contain sm:hidden ${globalSettings.logoSizeMobile}`}
+                />
+              </>
+            ) : (
+              <>
+                <div className="w-10 h-10 bg-gradient-pink rounded-2xl flex items-center justify-center shadow-lg glow-pink rotate-6">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 21l-8.228-3.69L2 7l7.662-3.11a2 2 0 011.676 0L19 7l-1.772 10.31L12 21z" /></svg>
+                </div>
+                <h1 className="text-xl font-bold tracking-tight gradient-text uppercase serif-display hidden sm:block">{globalSettings.websiteName}</h1>
+                <h1 className="text-xl font-bold tracking-tight gradient-text uppercase serif-display sm:hidden">{globalSettings.websiteName?.split(' ')[0] || 'Shop'}</h1>
+              </>
+            )}
           </div>
 
-          {expandedSections.inventory && (
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex gap-6 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            {categories.map((cat) => (
+              <a
+                key={cat}
+                href={`#${cat}`}
+                onClick={(e) => { e.preventDefault(); scrollToCategory(cat); }}
+                className="hover:text-[var(--primary-pink)] transition-all hover:scale-105 whitespace-nowrap"
+              >
+                {categorySettings[cat]?.displayName || cat}
+              </a>
+            ))}
+          </nav>
+        </div>
+      </header>
 
-            <div className="space-y-8">
-              {/* Products with valid categories */}
-              {categories.map((category) => {
-                const categoryProducts = products
-                  .filter(p => p.category === category)
-                  .sort((a, b) => (a.order || 0) - (b.order || 0));
+      {/* Continue with rest of frontend... */}
+      {/* QUẢN LÝ DANH MỤC */}
+      <div
+        className="flex justify-between items-center mb-6 cursor-pointer group"
+        onClick={() => toggleSection('categories')}
+      >
+        <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
+          <span className="w-1.5 h-6 bg-gradient-pink rounded-full inline-block"></span>
+          Cấu trúc danh mục
+        </h3>
+        <button className="pill-button glass px-4 py-2 hover:glass-strong transition-all">
+          <svg
+            className={`w-5 h-5 transition-transform duration-300 ${expandedSections.categories ? 'rotate-180' : ''}`}
+            style={{ color: 'var(--primary-pink)' }}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
 
-                if (categoryProducts.length === 0) return null;
+      {expandedSections.categories && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <div className="flex gap-3 mb-6">
+            <input
+              type="text"
+              placeholder="Tên danh mục mới (Vd: Hoa tươi 20/10)..."
+              className="glass-input flex-grow rounded-2xl px-5 py-3 text-sm"
+              value={newCategoryName}
+              onChange={e => setNewCategoryName(e.target.value)}
+            />
+            <button onClick={addCategory} className="pill-button bg-gradient-pink text-white px-8 py-3 text-sm font-bold shadow-lg hover-glow-pink">Thêm mục</button>
+          </div>
 
-                return (
-                  <div key={category} className="glass-strong p-6 rounded-2xl border border-white/30 shadow-lg">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                        <span className="w-2 h-2 bg-gradient-pink rounded-full glow-pink"></span>
-                        {category}
-                      </h4>
-                      <span className="badge-glass bg-gradient-soft text-xs font-bold" style={{ color: 'var(--primary-pink)' }}>{categoryProducts.length} sản phẩm</span>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                      {categoryProducts.map(p => (
-                        <div
-                          key={p.id}
-                          draggable
-                          onDragStart={(e) => handleProductDragStart(e, p.id)}
-                          onDragEnd={handleProductDragEnd}
-                          onDragOver={handleDragOver}
-                          onDrop={(e) => handleProductDrop(e, p.id, category)}
-                          className={`relative group cursor-move ${draggedProduct === p.id ? 'opacity-50 scale-95' : ''
-                            }`}
-                        >
-                          <div className="absolute top-2 left-2 z-10 bg-neutral-900/70 text-white px-2 py-1 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                            ⋮⋮ Kéo
-                          </div>
-                          <FlowerCard
-                            product={p}
-                            isAdmin
-                            onEdit={openEditModal}
-                            globalAspectRatio={
-                              globalSettings.aspectRatio === 'custom'
-                                ? (globalSettings.customValue || '3/4').replace(/:/g, '/').replace(/x/gi, '/')
-                                : globalSettings.aspectRatio
-                            }
-                            mediaMetadata={mediaMetadata}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* Products with deleted/invalid categories */}
-              {(() => {
-                const uncategorizedProducts = products.filter(p => !categories.includes(p.category));
-                if (uncategorizedProducts.length === 0) return null;
-
-                return (
-                  <div className="glass-strong p-6 rounded-2xl border-2 border-yellow-300/50 shadow-lg bg-yellow-50/20">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h4 className="font-bold flex items-center gap-2 text-yellow-700">
-                          <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
-                          ⚠️ Sản phẩm không có danh mục
-                        </h4>
-                        <p className="text-xs text-yellow-600 mt-1">
-                          Danh mục của các sản phẩm này đã bị xóa. Vui lòng chỉnh sửa để gán lại danh mục mới.
-                        </p>
-                      </div>
-                      <span className="badge-glass bg-yellow-500 text-white text-xs font-bold px-3 py-1">
-                        {uncategorizedProducts.length} sản phẩm
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                      {uncategorizedProducts.map(p => (
-                        <div key={p.id} className="relative group">
-                          <div className="absolute -top-2 -right-2 z-20 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg animate-pulse">
-                            ⚠️
-                          </div>
-                          <div className="absolute bottom-2 left-2 right-2 z-20 bg-red-500/90 text-white text-[10px] font-bold px-2 py-1 rounded text-center">
-                            Danh mục: "{p.category}" đã xóa
-                          </div>
-                          <FlowerCard
-                            product={p}
-                            isAdmin
-                            onEdit={openEditModal}
-                            globalAspectRatio={
-                              globalSettings.aspectRatio === 'custom'
-                                ? (globalSettings.customValue || '3/4').replace(/:/g, '/').replace(/x/gi, '/')
-                                : globalSettings.aspectRatio
-                            }
-                            mediaMetadata={mediaMetadata}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {products.length === 0 && (
-                <div className="text-center py-16 text-neutral-400">
-                  <svg className="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
-                  <p className="text-sm font-medium">Chưa có sản phẩm nào. Tạo sản phẩm đầu tiên!</p>
+          {/* Preview Button */}
+          <div className="mb-4 p-4 glass-gradient rounded-xl border border-white/40">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <svg className="w-5 h-5" style={{ color: 'var(--secondary-purple)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                <div>
+                  <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Xem trước thứ tự danh mục</p>
+                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Thứ tự này sẽ hiển thị trên trang chủ</p>
                 </div>
-              )}
+              </div>
+              <a
+                href="#"
+                target="_blank"
+                className="pill-button bg-gradient-purple text-white px-4 py-2 text-xs font-bold shadow-md hover-glow-pink"
+              >
+                Mở trang chủ
+              </a>
             </div>
-          )}
-        </section>
+          </div>
+
+          <div className="space-y-2">
+            {categories.map((cat, index) => {
+              const productCount = products.filter(p => p.category === cat).length;
+              return (
+                <div
+                  key={cat}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, cat)}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, cat)}
+                  className={`glass p-4 rounded-xl flex items-center gap-3 text-sm font-medium group hover:glass-strong hover:scale-[1.02] transition-all cursor-move shadow-md border-white/40 ${draggedCategory === cat ? 'opacity-50 scale-95' : ''
+                    }`}
+                >
+                  {/* Drag Handle Icon */}
+                  <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5a2 2 0 100 4 2 2 0 000-4zM8 11a2 2 0 100 4 2 2 0 000-4zM8 17a2 2 0 100 4 2 2 0 000-4zM16 5a2 2 0 100 4 2 2 0 000-4zM16 11a2 2 0 100 4 2 2 0 000-4zM16 17a2 2 0 100 4 2 2 0 000-4z" />
+                  </svg>
+
+                  {/* Position Number */}
+                  <span className="w-8 h-8 bg-gradient-pink text-white rounded-xl flex items-center justify-center text-xs font-bold shadow-lg flex-shrink-0 glow-pink">
+                    {index + 1}
+                  </span>
+
+                  {/* Category Name */}
+                  <span className="flex-grow font-semibold" style={{ color: 'var(--text-primary)' }}>{cat}</span>
+
+                  {/* Product Count Badge */}
+                  <span className={`badge-glass px-3 py-1 text-xs font-bold flex-shrink-0 ${productCount > 0
+                    ? 'bg-gradient-soft text-green-700'
+                    : 'bg-white/20'
+                    }`} style={{ color: productCount > 0 ? 'var(--primary-pink)' : 'var(--text-secondary)' }}>
+                    {productCount} SP
+                  </span>
+
+                  {/* Reorder Buttons */}
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => moveCategoryUp(index)}
+                      disabled={index === 0}
+                      className={`p-2 rounded-lg transition-all ${index === 0
+                        ? 'text-neutral-200 cursor-not-allowed'
+                        : 'text-neutral-400 hover:text-blue-600 hover:bg-blue-50'
+                        }`}
+                      title="Di chuyển lên"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 15l7-7 7 7" /></svg>
+                    </button>
+                    <button
+                      onClick={() => moveCategoryDown(index)}
+                      disabled={index === categories.length - 1}
+                      className={`p-2 rounded-lg transition-all ${index === categories.length - 1
+                        ? 'text-neutral-200 cursor-not-allowed'
+                        : 'text-neutral-400 hover:text-blue-600 hover:bg-blue-50'
+                        }`}
+                      title="Di chuyển xuống"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                  </div>
+
+                  {/* Settings Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingCategory(cat);
+                      setShowCategorySettingsModal(true);
+                    }}
+                    className="p-2 text-neutral-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all"
+                    title="Cài đặt danh mục"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </button>
+
+                  {/* Delete Button */}
+                  <button
+                    onClick={() => deleteCategory(cat)}
+                    className="p-2 text-neutral-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                    title="Xóa danh mục"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeWidth="2" strokeLinecap="round" /></svg>
+                  </button>
+                </div>
+              );
+            })}
+
+            {categories.length === 0 && (
+              <div className="text-center py-8 text-neutral-400 text-sm">
+                <svg className="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+                Chưa có danh mục nào. Thêm danh mục đầu tiên!
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </section>
+
+
+        {/* QUẢN LÝ NHANH SẢN PHẨM */ }
+  <section>
+    <div
+      className="flex justify-between items-center mb-6 cursor-pointer group glass-strong p-4 rounded-2xl"
+      onClick={() => toggleSection('inventory')}
+    >
+      <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
+        <span className="w-1.5 h-6 bg-gradient-sunset rounded-full inline-block"></span>
+        Kho hàng hiện tại ({products.length})
+      </h3>
+      <button className="pill-button glass px-4 py-2 hover:glass-strong transition-all">
+        <svg
+          className={`w-5 h-5 transition-transform duration-300 ${expandedSections.inventory ? 'rotate-180' : ''}`}
+          style={{ color: 'var(--primary-pink)' }}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+    </div>
+
+    {expandedSections.inventory && (
+
+      <div className="space-y-8">
+        {/* Products with valid categories */}
+        {categories.map((category) => {
+          const categoryProducts = products
+            .filter(p => p.category === category)
+            .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+          if (categoryProducts.length === 0) return null;
+
+          return (
+            <div key={category} className="glass-strong p-6 rounded-2xl border border-white/30 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                  <span className="w-2 h-2 bg-gradient-pink rounded-full glow-pink"></span>
+                  {category}
+                </h4>
+                <span className="badge-glass bg-gradient-soft text-xs font-bold" style={{ color: 'var(--primary-pink)' }}>{categoryProducts.length} sản phẩm</span>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {categoryProducts.map(p => (
+                  <div
+                    key={p.id}
+                    draggable
+                    onDragStart={(e) => handleProductDragStart(e, p.id)}
+                    onDragEnd={handleProductDragEnd}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleProductDrop(e, p.id, category)}
+                    className={`relative group cursor-move ${draggedProduct === p.id ? 'opacity-50 scale-95' : ''
+                      }`}
+                  >
+                    <div className="absolute top-2 left-2 z-10 bg-neutral-900/70 text-white px-2 py-1 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                      ⋮⋮ Kéo
+                    </div>
+                    <FlowerCard
+                      product={p}
+                      isAdmin
+                      onEdit={openEditModal}
+                      globalAspectRatio={
+                        globalSettings.aspectRatio === 'custom'
+                          ? (globalSettings.customValue || '3/4').replace(/:/g, '/').replace(/x/gi, '/')
+                          : globalSettings.aspectRatio
+                      }
+                      mediaMetadata={mediaMetadata}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Products with deleted/invalid categories */}
+        {(() => {
+          const uncategorizedProducts = products.filter(p => !categories.includes(p.category));
+          if (uncategorizedProducts.length === 0) return null;
+
+          return (
+            <div className="glass-strong p-6 rounded-2xl border-2 border-yellow-300/50 shadow-lg bg-yellow-50/20">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h4 className="font-bold flex items-center gap-2 text-yellow-700">
+                    <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
+                    ⚠️ Sản phẩm không có danh mục
+                  </h4>
+                  <p className="text-xs text-yellow-600 mt-1">
+                    Danh mục của các sản phẩm này đã bị xóa. Vui lòng chỉnh sửa để gán lại danh mục mới.
+                  </p>
+                </div>
+                <span className="badge-glass bg-yellow-500 text-white text-xs font-bold px-3 py-1">
+                  {uncategorizedProducts.length} sản phẩm
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {uncategorizedProducts.map(p => (
+                  <div key={p.id} className="relative group">
+                    <div className="absolute -top-2 -right-2 z-20 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg animate-pulse">
+                      ⚠️
+                    </div>
+                    <div className="absolute bottom-2 left-2 right-2 z-20 bg-red-500/90 text-white text-[10px] font-bold px-2 py-1 rounded text-center">
+                      Danh mục: "{p.category}" đã xóa
+                    </div>
+                    <FlowerCard
+                      product={p}
+                      isAdmin
+                      onEdit={openEditModal}
+                      globalAspectRatio={
+                        globalSettings.aspectRatio === 'custom'
+                          ? (globalSettings.customValue || '3/4').replace(/:/g, '/').replace(/x/gi, '/')
+                          : globalSettings.aspectRatio
+                      }
+                      mediaMetadata={mediaMetadata}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
+        {products.length === 0 && (
+          <div className="text-center py-16 text-neutral-400">
+            <svg className="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+            <p className="text-sm font-medium">Chưa có sản phẩm nào. Tạo sản phẩm đầu tiên!</p>
+          </div>
+        )}
+      </div>
+    )}
+  </section>
       </>
     ) : activeTab === 'media' ? (
-      <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
-        <MediaLibrary
-          onMetadataChange={setMediaMetadata}
-          onImageDelete={handleImageDeletedFromLibrary}
+  <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
+    <MediaLibrary
+      onMetadataChange={setMediaMetadata}
+      onImageDelete={handleImageDeletedFromLibrary}
+    />
+  </section>
+) : activeTab === 'css' ? (
+  <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
+    <div className="mb-6">
+      <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
+        <span className="w-1.5 h-6 bg-gradient-pink rounded-full inline-block"></span>
+        🎨 Custom CSS
+      </h3>
+      <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
+        Nhập CSS tùy chỉnh để thay đổi giao diện website. CSS sẽ được áp dụng ngay lập tức.
+      </p>
+    </div>
+
+    <div className="space-y-4">
+      <div className="glass p-6 rounded-2xl">
+        <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+          CSS Code
+        </label>
+        <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+          Ví dụ: .glass {'{ background: rgba(255, 255, 255, 0.1); }'}
+        </p>
+        <textarea
+          className="glass-input w-full rounded-2xl px-5 py-4 text-sm font-mono"
+          rows={20}
+          placeholder="/* Nhập CSS tùy chỉnh tại đây */&#10;.your-class {&#10;  color: #FF6B9D;&#10;  font-size: 16px;&#10;}"
+          value={globalSettings.customCSS}
+          onChange={(e) => {
+            const newSettings = { ...globalSettings, customCSS: e.target.value };
+            setGlobalSettings(newSettings);
+            localStorage.setItem('global_settings', JSON.stringify(newSettings));
+          }}
+          style={{
+            fontFamily: 'Monaco, Consolas, "Courier New", monospace',
+            fontSize: '13px',
+            lineHeight: '1.6'
+          }}
         />
-      </section>
-    ) : activeTab === 'css' ? (
-      <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
-        <div className="mb-6">
+      </div>
+
+      <div className="glass-pink p-4 rounded-xl">
+        <p className="text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+          💡 Mẹo sử dụng Custom CSS:
+        </p>
+        <ul className="text-xs space-y-1" style={{ color: 'var(--text-secondary)' }}>
+          <li>• CSS sẽ tự động lưu và áp dụng khi bạn nhập</li>
+          <li>• Sử dụng !important nếu cần ghi đè style mặc định</li>
+          <li>• Test trên  cả PC và Mobile để đảm bảo responsive</li>
+          <li>• Có thể tùy chỉnh: màu sắc, font chữ, khoảng cách, hiệu ứng, v.v.</li>
+        </ul>
+      </div>
+
+      {globalSettings.customCSS && (
+        <button
+          onClick={() => {
+            if (confirm('Bạn có chắc muốn xóa toàn bộ Custom CSS?')) {
+              const newSettings = { ...globalSettings, customCSS: '' };
+              setGlobalSettings(newSettings);
+              localStorage.setItem('global_settings', JSON.stringify(newSettings));
+              alert('✅ Đã xóa Custom CSS!');
+            }
+          }}
+          className="w-full py-3 bg-rose-50 text-rose-600 rounded-xl text-sm font-bold hover:bg-rose-100 transition-all"
+        >
+          🗑️ Xóa toàn bộ CSS
+        </button>
+      )}
+    </div>
+  </section>
+) : activeTab === 'analytics' ? (
+  <>
+    {/* Analytics Dashboard Header */}
+    <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div>
           <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
-            <span className="w-1.5 h-6 bg-gradient-pink rounded-full inline-block"></span>
-            🎨 Custom CSS
+            <span className="w-1.5 h-6 bg-gradient-sunset rounded-full inline-block"></span>
+            📊 Bảng Tổng Quan Analytics
           </h3>
           <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
-            Nhập CSS tùy chỉnh để thay đổi giao diện website. CSS sẽ được áp dụng ngay lập tức.
+            Thống kê lượt xem và tương tác của khách hàng
           </p>
         </div>
 
-        <div className="space-y-4">
-          <div className="glass p-6 rounded-2xl">
-            <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-              CSS Code
-            </label>
-            <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-              Ví dụ: .glass {'{ background: rgba(255, 255, 255, 0.1); }'}
-            </p>
-            <textarea
-              className="glass-input w-full rounded-2xl px-5 py-4 text-sm font-mono"
-              rows={20}
-              placeholder="/* Nhập CSS tùy chỉnh tại đây */&#10;.your-class {&#10;  color: #FF6B9D;&#10;  font-size: 16px;&#10;}"
-              value={globalSettings.customCSS}
-              onChange={(e) => {
-                const newSettings = { ...globalSettings, customCSS: e.target.value };
-                setGlobalSettings(newSettings);
-                localStorage.setItem('global_settings', JSON.stringify(newSettings));
-              }}
-              style={{
-                fontFamily: 'Monaco, Consolas, "Courier New", monospace',
-                fontSize: '13px',
-                lineHeight: '1.6'
-              }}
-            />
-          </div>
-
-          <div className="glass-pink p-4 rounded-xl">
-            <p className="text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
-              💡 Mẹo sử dụng Custom CSS:
-            </p>
-            <ul className="text-xs space-y-1" style={{ color: 'var(--text-secondary)' }}>
-              <li>• CSS sẽ tự động lưu và áp dụng khi bạn nhập</li>
-              <li>• Sử dụng !important nếu cần ghi đè style mặc định</li>
-              <li>• Test trên  cả PC và Mobile để đảm bảo responsive</li>
-              <li>• Có thể tùy chỉnh: màu sắc, font chữ, khoảng cách, hiệu ứng, v.v.</li>
-            </ul>
-          </div>
-
-          {globalSettings.customCSS && (
-            <button
-              onClick={() => {
-                if (confirm('Bạn có chắc muốn xóa toàn bộ Custom CSS?')) {
-                  const newSettings = { ...globalSettings, customCSS: '' };
-                  setGlobalSettings(newSettings);
-                  localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                  alert('✅ Đã xóa Custom CSS!');
-                }
-              }}
-              className="w-full py-3 bg-rose-50 text-rose-600 rounded-xl text-sm font-bold hover:bg-rose-100 transition-all"
-            >
-              🗑️ Xóa toàn bộ CSS
-            </button>
-          )}
+        {/* Analytics Actions */}
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => {
+              exportAnalytics();
+              alert('✅ Đã tải xuống file analytics!');
+            }}
+            className="pill-button glass-pink px-4 py-2 text-sm font-bold hover:glass-strong transition-all"
+            title="Tải xuống dữ liệu analytics dạng JSON"
+          >
+            📥 Tải dữ liệu
+          </button>
+          <button
+            onClick={() => {
+              clearOldAnalytics(30);
+              alert('✅ Đã xóa dữ liệu cũ hơn 30 ngày!');
+              window.location.reload();
+            }}
+            className="pill-button glass px-4 py-2 text-sm font-bold hover:glass-strong transition-all"
+            title="Xóa dữ liệu cũ hơn 30 ngày"
+          >
+            🗑️ Xóa dữ liệu cũ
+          </button>
+          <button
+            onClick={() => clearAllAnalytics()}
+            className="pill-button glass-pink px-4 py-2 text-sm font-bold hover:bg-rose-100 transition-all"
+            style={{ color: 'var(--primary-pink)' }}
+            title="Xóa toàn bộ dữ liệu thống kê"
+          >
+            ⚠️ Xóa tất cả
+          </button>
         </div>
-      </section>
-    ) : activeTab === 'analytics' ? (
-      <>
-        {/* Analytics Dashboard Header */}
-        <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div>
-              <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
-                <span className="w-1.5 h-6 bg-gradient-sunset rounded-full inline-block"></span>
-                📊 Bảng Tổng Quan Analytics
-              </h3>
-              <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
-                Thống kê lượt xem và tương tác của khách hàng
-              </p>
-            </div>
+      </div>
+    </section>
 
-            {/* Analytics Actions */}
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => {
-                  exportAnalytics();
-                  alert('✅ Đã tải xuống file analytics!');
-                }}
-                className="pill-button glass-pink px-4 py-2 text-sm font-bold hover:glass-strong transition-all"
-                title="Tải xuống dữ liệu analytics dạng JSON"
-              >
-                📥 Tải dữ liệu
-              </button>
-              <button
-                onClick={() => {
-                  clearOldAnalytics(30);
-                  alert('✅ Đã xóa dữ liệu cũ hơn 30 ngày!');
-                  window.location.reload();
-                }}
-                className="pill-button glass px-4 py-2 text-sm font-bold hover:glass-strong transition-all"
-                title="Xóa dữ liệu cũ hơn 30 ngày"
-              >
-                🗑️ Xóa dữ liệu cũ
-              </button>
-              <button
-                onClick={() => clearAllAnalytics()}
-                className="pill-button glass-pink px-4 py-2 text-sm font-bold hover:bg-rose-100 transition-all"
-                style={{ color: 'var(--primary-pink)' }}
-                title="Xóa toàn bộ dữ liệu thống kê"
-              >
-                ⚠️ Xóa tất cả
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Analytics Dashboard Component */}
-        <AnalyticsDashboard
-          analyticsData={analyticsData}
-          products={products}
-        />
-      </>
-    ) : activeTab === 'orders' ? (
-      <>
-        {/* Orders Management Component */}
-        <OrdersManagement />
-      </>
-    ) : null
+    {/* Analytics Dashboard Component */}
+    <AnalyticsDashboard
+      analyticsData={analyticsData}
+      products={products}
+    />
+  </>
+) : activeTab === 'orders' ? (
+  <>
+    {/* Orders Management Component */}
+    <OrdersManagement />
+  </>
+) : null
   }
         </main >
 
