@@ -46,8 +46,8 @@ const App: React.FC = () => {
   const [draggedProduct, setDraggedProduct] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
 
-  // NEW: admin tabs - EXPANDED with 'orders'
-  const [activeTab, setActiveTab] = useState<'products' | 'media' | 'css' | 'analytics' | 'orders'>('products');
+  // NEW: admin tabs - EXPANDED with 'orders' and 'settings'
+  const [activeTab, setActiveTab] = useState<'products' | 'media' | 'css' | 'analytics' | 'orders' | 'settings'>('products');
 
   // NEW: Global Media Metadata (SEO)
   const [mediaMetadata, setMediaMetadata] = useState<Record<string, { alt?: string, title?: string, description?: string }>>({});
@@ -1070,6 +1070,15 @@ const App: React.FC = () => {
                 }`}
             >
               📦 Quản Lý Đơn Hàng
+            </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`px-6 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'settings'
+                ? 'bg-gradient-pink text-white shadow-lg'
+                : 'text-neutral-600 hover:bg-white/50'
+                }`}
+            >
+              ⚙️ Cài Đặt Chung
             </button>
           </div>
         </div>
@@ -2097,6 +2106,14 @@ const App: React.FC = () => {
               {/* Orders Management Component */}
               <OrdersManagement />
             </>
+          ) : activeTab === 'settings' ? (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              {/* Settings content will be moved here */}
+              <h2 className="text-2xl font-bold gradient-text">⚙️ Cài đặt chung</h2>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                Nội dung cài đặt sẽ được chuyển vào đây...
+              </p>
+            </div>
           ) : null}
         </main>
 
