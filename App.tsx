@@ -2108,11 +2108,248 @@ const App: React.FC = () => {
             </>
           ) : activeTab === 'settings' ? (
             <div className="space-y-6 animate-in fade-in duration-300">
-              {/* Settings content will be moved here */}
-              <h2 className="text-2xl font-bold gradient-text">⚙️ Cài đặt chung</h2>
-              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Nội dung cài đặt sẽ được chuyển vào đây...
-              </p>
+              {/* Settings Tab Header */}
+              <div className="glass-strong p-6 rounded-2xl border border-white/30 shadow-xl">
+                <h2 className="text-2xl font-bold serif-display gradient-text mb-2">⚙️ Cài đặt chung</h2>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  Quản lý giao diện, thương hiệu và các cài đặt website
+                </p>
+              </div>
+
+              {/* Aspect Ratio */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  🖼️ Tỷ lệ khung hình cho tất cả sản phẩm
+                </label>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  Thay đổi tỷ lệ này sẽ áp dụng cho tất cả thumbnail sản phẩm trên trang chủ
+                </p>
+                <div className="space-y-4">
+                  <div className="flex gap-3 items-center">
+                    <select
+                      className="glass-input flex-grow rounded-2xl px-5 py-3 text-sm font-semibold"
+                      value={globalSettings.aspectRatio === 'custom' ? 'custom' : globalSettings.aspectRatio}
+                      onChange={(e) => {
+                        const newSettings = { ...globalSettings, aspectRatio: e.target.value };
+                        setGlobalSettings(newSettings);
+                        localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                      }}
+                    >
+                      <option value="1/1">1:1 - Vuông (Instagram)</option>
+                      <option value="3/4">3:4 - Dọc (Mặc định)</option>
+                      <option value="4/3">4:3 - Ngang</option>
+                      <option value="16/9">16:9 - Widescreen</option>
+                      <option value="custom">✨ Tùy chọn (Nhập riêng)...</option>
+                    </select>
+                    <div className="badge-glass bg-gradient-pink text-white px-4 py-2 text-xs font-bold">
+                      {globalSettings.aspectRatio === 'custom' ? (globalSettings.customValue || 'Chưa nhập') : globalSettings.aspectRatio}
+                    </div>
+                  </div>
+                  {globalSettings.aspectRatio === 'custom' && (
+                    <div className="animate-in slide-in-from-top-2 duration-300">
+                      <label className="text-[10px] font-bold uppercase text-neutral-400 ml-1 mb-2 block">Nhập tỷ lệ hoặc Pixel (Vd: 2:3, 500x700, 0.75)</label>
+                      <input
+                        type="text"
+                        placeholder="Ví dụ: 2:3 hoặc 500x700"
+                        className="glass-input w-full rounded-2xl px-5 py-3 text-sm font-medium"
+                        value={globalSettings.customValue}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const newSettings = { ...globalSettings, customValue: val };
+                          setGlobalSettings(newSettings);
+                          localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* SKU Toggle */}
+              <div className="glass p-6 rounded-2xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                      🏷️ Hiển thị mã SKU trên ảnh sản phẩm
+                    </label>
+                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                      Bật để hiển thị mã sản phẩm (SKU) ở góc dưới bên trái của ảnh
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={globalSettings.showSKU}
+                      onChange={(e) => {
+                        const newSettings = { ...globalSettings, showSKU: e.target.checked };
+                        setGlobalSettings(newSettings);
+                        localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                      }}
+                    />
+                    <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-pink"></div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Zalo Link */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  📱 Link Zalo cho nút "Liên hệ đặt hàng"
+                </label>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  Nhập link Zalo của shop (vd: https://zalo.me/0900000000)
+                </p>
+                <input
+                  type="text"
+                  className="glass-input w-full rounded-2xl px-5 py-3 text-sm font-medium"
+                  placeholder="https://zalo.me/0900000000"
+                  value={globalSettings.zaloLink}
+                  onChange={(e) => {
+                    const newSettings = { ...globalSettings, zaloLink: e.target.value };
+                    setGlobalSettings(newSettings);
+                    localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                  }}
+                />
+              </div>
+
+              {/* Phone Number */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  ☎️ Số điện thoại liên hệ
+                </label>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  Nhập số điện thoại để khách hàng gọi trực tiếp
+                </p>
+                <input
+                  type="tel"
+                  className="glass-input w-full rounded-2xl px-5 py-3 text-sm font-medium"
+                  placeholder="0900000000"
+                  value={globalSettings.phoneNumber}
+                  onChange={(e) => {
+                    const newSettings = { ...globalSettings, phoneNumber: e.target.value };
+                    setGlobalSettings(newSettings);
+                    localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                  }}
+                />
+              </div>
+
+              {/* Theme Color */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  🎨 Chọn màu chủ đạo website
+                </label>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  Thay đổi tone màu cho toàn bộ giao diện
+                </p>
+                <div className="grid grid-cols-5 gap-3">
+                  {[
+                    { name: 'pink', label: 'Hồng', color: '#FF6B9D' },
+                    { name: 'purple', label: 'Tím', color: '#BD5FFF' },
+                    { name: 'blue', label: 'Xanh Dương', color: '#4F9FFF' },
+                    { name: 'green', label: 'Xanh Lá', color: '#4ADE80' },
+                    { name: 'orange', label: 'Cam', color: '#FF8A5B' }
+                  ].map(theme => (
+                    <button
+                      key={theme.name}
+                      onClick={() => {
+                        const newSettings = { ...globalSettings, themeColor: theme.name };
+                        setGlobalSettings(newSettings);
+                        localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                      }}
+                      className={`p-4 rounded-xl border-2 transition-all hover:scale-105 ${globalSettings.themeColor === theme.name
+                        ? 'border-current shadow-lg'
+                        : 'border-neutral-200'
+                        }`}
+                      style={{ backgroundColor: theme.color + '20', borderColor: globalSettings.themeColor === theme.name ? theme.color : undefined }}
+                    >
+                      <div
+                        className="w-8 h-8 rounded-full mx-auto mb-2"
+                        style={{ backgroundColor: theme.color }}
+                      />
+                      <p className="text-[10px] font-bold text-center">{theme.label}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Website Name */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  🏪 Tên website/cửa hàng
+                </label>
+                <input
+                  type="text"
+                  className="glass-input w-full rounded-2xl px-5 py-3 text-sm font-medium"
+                  placeholder="Vd: Floral Essence"
+                  value={globalSettings.websiteName}
+                  onChange={(e) => {
+                    const newSettings = { ...globalSettings, websiteName: e.target.value };
+                    setGlobalSettings(newSettings);
+                    localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                  }}
+                />
+              </div>
+
+              {/* Feature Toggles */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  ⚡ Chức năng website
+                </label>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                        🖼️ Bật/Tắt Lightbox xem ảnh
+                      </label>
+                      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                        Cho phép khách hàng xem ảnh toàn màn hình
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={globalSettings.enableLightbox}
+                        onChange={(e) => {
+                          const newSettings = { ...globalSettings, enableLightbox: e.target.checked };
+                          setGlobalSettings(newSettings);
+                          localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                        }}
+                      />
+                      <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-pink"></div>
+                    </label>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                        💰 Hiển thị giá sản phẩm
+                      </label>
+                      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                        Tắt nếu muốn khách hỏi giá qua Zalo
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={globalSettings.enablePriceDisplay}
+                        onChange={(e) => {
+                          const newSettings = { ...globalSettings, enablePriceDisplay: e.target.checked };
+                          setGlobalSettings(newSettings);
+                          localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                        }}
+                      />
+                      <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-pink"></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Note */}
+              <div className="glass-pink p-4 rounded-xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+                💡 <span className="font-semibold">Lưu ý:</span> Thay đổi sẽ được lưu tự động và áp dụng ngay lập tức.
+              </div>
             </div>
           ) : null}
         </main>
