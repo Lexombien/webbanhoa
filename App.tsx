@@ -1072,352 +1072,233 @@ const App: React.FC = () => {
             >
               📦 Quản Lý Đơn Hàng
             </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`px-6 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'settings'
+                ? 'bg-gradient-pink text-white shadow-lg'
+                : 'text-neutral-600 hover:bg-white/50'
+                }`}
+            >
+              ⚙️ Cài Đặt Chung
+            </button>
           </div>
         </div>
 
         <main className="max-w-6xl mx-auto p-6 space-y-8 mt-6">
           {activeTab === 'products' ? (
             <>
-              {/* CÀI ĐẶT CHUNG - MOVED TO TOP */}
-              <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
-                <div
-                  className="flex justify-between items-center mb-6 cursor-pointer group"
-                  onClick={() => toggleSection('settings')}
-                >
-                  <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
-                    <span className="w-1.5 h-6 bg-gradient-sunset rounded-full inline-block"></span>
-                    ⚙️ Cài đặt chung
-                  </h3>
-                  <button className="pill-button glass px-4 py-2 hover:glass-strong transition-all">
-                    <svg
-                      className={`w-5 h-5 transition-transform duration-300 ${expandedSections.settings ? 'rotate-180' : ''}`}
-                      style={{ color: 'var(--primary-pink)' }}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+              {/* Product Management Sections will go here */}
+            </>
+          ) : activeTab === 'settings' ? (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              {/* General Settings Section - Now Standalone */}
+              <h3 className="text-2xl font-bold serif-display gradient-text mb-6">⚙️ Cài đặt chung</h3>
+
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  🖼️ Tỷ lệ khung hình cho tất cả sản phẩm
+                </label>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  Thay đổi tỷ lệ này sẽ áp dụng cho tất cả thumbnail sản phẩm trên trang chủ
+                </p>
+                <div className="space-y-4">
+                  <div className="flex gap-3 items-center">
+                    <select
+                      className="glass-input flex-grow rounded-2xl px-5 py-3 text-sm font-semibold"
+                      value={globalSettings.aspectRatio === 'custom' ? 'custom' : globalSettings.aspectRatio}
+                      onChange={(e) => {
+                        const newSettings = { ...globalSettings, aspectRatio: e.target.value };
+                        setGlobalSettings(newSettings);
+                        localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                      }}
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                </div>
-
-                {expandedSections.settings && (
-                  <div className="space-y-6 animate-in fade-in duration-300">
-                    <div className="glass p-6 rounded-2xl">
-                      <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-                        🖼️ Tỷ lệ khung hình cho tất cả sản phẩm
-                      </label>
-                      <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-                        Thay đổi tỷ lệ này sẽ áp dụng cho tất cả thumbnail sản phẩm trên trang chủ
-                      </p>
-                      <div className="space-y-4">
-                        <div className="flex gap-3 items-center">
-                          <select
-                            className="glass-input flex-grow rounded-2xl px-5 py-3 text-sm font-semibold"
-                            value={globalSettings.aspectRatio === 'custom' ? 'custom' : globalSettings.aspectRatio}
-                            onChange={(e) => {
-                              const newSettings = { ...globalSettings, aspectRatio: e.target.value };
-                              setGlobalSettings(newSettings);
-                              localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                            }}
-                          >
-                            <option value="1/1">1:1 - Vuông (Instagram)</option>
-                            <option value="3/4">3:4 - Dọc (Mặc định)</option>
-                            <option value="4/3">4:3 - Ngang</option>
-                            <option value="16/9">16:9 - Widescreen</option>
-                            <option value="custom">✨ Tùy chọn (Nhập riêng)...</option>
-                          </select>
-                          <div className="badge-glass bg-gradient-pink text-white px-4 py-2 text-xs font-bold">
-                            {globalSettings.aspectRatio === 'custom' ? (globalSettings.customValue || 'Chưa nhập') : globalSettings.aspectRatio}
-                          </div>
-                        </div>
-
-                        {globalSettings.aspectRatio === 'custom' && (
-                          <div className="animate-in slide-in-from-top-2 duration-300">
-                            <label className="text-[10px] font-bold uppercase text-neutral-400 ml-1 mb-2 block">Nhập tỷ lệ hoặc Pixel (Vd: 2:3, 500x700, 0.75)</label>
-                            <input
-                              type="text"
-                              placeholder="Ví dụ: 2:3 hoặc 500x700"
-                              className="glass-input w-full rounded-2xl px-5 py-3 text-sm font-medium"
-                              value={globalSettings.customValue}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                const newSettings = { ...globalSettings, customValue: val };
-                                setGlobalSettings(newSettings);
-                                localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                              }}
-                            />
-                            <p className="text-[10px] text-neutral-400 mt-2 ml-1">
-                              * Hệ thống sẽ tự chuyển đổi ':' và 'x' thành dấu '/' để CSS hiểu được.
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                      <option value="1/1">1:1 - Vuông (Instagram)</option>
+                      <option value="3/4">3:4 - Dọc (Mặc định)</option>
+                      <option value="4/3">4:3 - Ngang</option>
+                      <option value="16/9">16:9 - Widescreen</option>
+                      <option value="custom">✨ Tùy chọn (Nhập riêng)...</option>
+                    </select>
+                    <div className="badge-glass bg-gradient-pink text-white px-4 py-2 text-xs font-bold">
+                      {globalSettings.aspectRatio === 'custom' ? (globalSettings.customValue || 'Chưa nhập') : globalSettings.aspectRatio}
                     </div>
+                  </div>
 
-                    {/* NEW: SKU Display Toggle */}
-                    <div className="glass p-6 rounded-2xl">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
-                            🏷️ Hiển thị mã SKU trên ảnh sản phẩm
-                          </label>
-                          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                            Bật để hiển thị mã sản phẩm (SKU) ở góc dưới bên trái của ảnh
-                          </p>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            className="sr-only peer"
-                            checked={globalSettings.showSKU}
-                            onChange={(e) => {
-                              const newSettings = { ...globalSettings, showSKU: e.target.checked };
-                              setGlobalSettings(newSettings);
-                              localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                            }}
-                          />
-                          <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-pink"></div>
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* NEW: Zalo Link Input */}
-                    <div className="glass p-6 rounded-2xl">
-                      <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-                        📱 Link Zalo cho nút "Liên hệ đặt hàng"
-                      </label>
-                      <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-                        Nhập link Zalo của shop (vd: https://zalo.me/0900000000)
-                      </p>
+                  {globalSettings.aspectRatio === 'custom' && (
+                    <div className="animate-in slide-in-from-top-2 duration-300">
+                      <label className="text-[10px] font-bold uppercase text-neutral-400 ml-1 mb-2 block">Nhập tỷ lệ hoặc Pixel (Vd: 2:3, 500x700, 0.75)</label>
                       <input
                         type="text"
+                        placeholder="Ví dụ: 2:3 hoặc 500x700"
                         className="glass-input w-full rounded-2xl px-5 py-3 text-sm font-medium"
-                        placeholder="https://zalo.me/0900000000"
-                        value={globalSettings.zaloLink}
+                        value={globalSettings.customValue}
                         onChange={(e) => {
-                          const newSettings = { ...globalSettings, zaloLink: e.target.value };
+                          const val = e.target.value;
+                          const newSettings = { ...globalSettings, customValue: val };
                           setGlobalSettings(newSettings);
                           localStorage.setItem('global_settings', JSON.stringify(newSettings));
                         }}
                       />
-                    </div>
-
-                    {/* Phone Number Input */}
-                    <div className="glass p-6 rounded-2xl">
-                      <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-                        ☎️ Số điện thoại liên hệ
-                      </label>
-                      <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-                        Nhập số điện thoại để khách hàng gọi trực tiếp
+                      <p className="text-[10px] text-neutral-400 mt-2 ml-1">
+                        * Hệ thống sẽ tự chuyển đổi ':' và 'x' thành dấu '/' để CSS hiểu được.
                       </p>
-                      <input
-                        type="tel"
-                        className="glass-input w-full rounded-2xl px-5 py-3 text-sm font-medium"
-                        placeholder="0900000000"
-                        value={globalSettings.phoneNumber}
-                        onChange={(e) => {
-                          const newSettings = { ...globalSettings, phoneNumber: e.target.value };
-                          setGlobalSettings(newSettings);
-                          localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                        }}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* NEW: SKU Display Toggle */}
+              <div className="glass p-6 rounded-2xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                      🏷️ Hiển thị mã SKU trên ảnh sản phẩm
+                    </label>
+                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                      Bật để hiển thị mã sản phẩm (SKU) ở góc dưới bên trái của ảnh
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={globalSettings.showSKU}
+                      onChange={(e) => {
+                        const newSettings = { ...globalSettings, showSKU: e.target.checked };
+                        setGlobalSettings(newSettings);
+                        localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                      }}
+                    />
+                    <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-pink"></div>
+                  </label>
+                </div>
+              </div>
+
+              {/* NEW: Zalo Link Input */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  📱 Link Zalo cho nút "Liên hệ đặt hàng"
+                </label>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  Nhập link Zalo của shop (vd: https://zalo.me/0900000000)
+                </p>
+                <input
+                  type="text"
+                  className="glass-input w-full rounded-2xl px-5 py-3 text-sm font-medium"
+                  placeholder="https://zalo.me/0900000000"
+                  value={globalSettings.zaloLink}
+                  onChange={(e) => {
+                    const newSettings = { ...globalSettings, zaloLink: e.target.value };
+                    setGlobalSettings(newSettings);
+                    localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                  }}
+                />
+              </div>
+
+              {/* Phone Number Input */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  ☎️ Số điện thoại liên hệ
+                </label>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  Nhập số điện thoại để khách hàng gọi trực tiếp
+                </p>
+                <input
+                  type="tel"
+                  className="glass-input w-full rounded-2xl px-5 py-3 text-sm font-medium"
+                  placeholder="0900000000"
+                  value={globalSettings.phoneNumber}
+                  onChange={(e) => {
+                    const newSettings = { ...globalSettings, phoneNumber: e.target.value };
+                    setGlobalSettings(newSettings);
+                    localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                  }}
+                />
+              </div>
+
+              {/* Theme Color Selector */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  🎨 Chọn màu chủ đạo website
+                </label>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  Thay đổi tone màu cho toàn bộ giao diện
+                </p>
+                <div className="grid grid-cols-5 gap-3">
+                  {[
+                    { name: 'pink', label: 'Hồng', color: '#FF6B9D' },
+                    { name: 'purple', label: 'Tím', color: '#BD5FFF' },
+                    { name: 'blue', label: 'Xanh Dương', color: '#4F9FFF' },
+                    { name: 'green', label: 'Xanh Lá', color: '#4ADE80' },
+                    { name: 'orange', label: 'Cam', color: '#FF8A5B' }
+                  ].map(theme => (
+                    <button
+                      key={theme.name}
+                      onClick={() => {
+                        const newSettings = { ...globalSettings, themeColor: theme.name };
+                        setGlobalSettings(newSettings);
+                        localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                      }}
+                      className={`p-4 rounded-xl border-2 transition-all hover:scale-105 ${globalSettings.themeColor === theme.name
+                        ? 'border-current shadow-lg'
+                        : 'border-neutral-200'
+                        }`}
+                      style={{ backgroundColor: theme.color + '20', borderColor: globalSettings.themeColor === theme.name ? theme.color : undefined }}
+                    >
+                      <div
+                        className="w-8 h-8 rounded-full mx-auto mb-2"
+                        style={{ backgroundColor: theme.color }}
                       />
-                    </div>
+                      <p className="text-[10px] font-bold text-center">{theme.label}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                    {/* Theme Color Selector */}
-                    <div className="glass p-6 rounded-2xl">
-                      <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-                        🎨 Chọn màu chủ đạo website
-                      </label>
-                      <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-                        Thay đổi tone màu cho toàn bộ giao diện
-                      </p>
-                      <div className="grid grid-cols-5 gap-3">
-                        {[
-                          { name: 'pink', label: 'Hồng', color: '#FF6B9D' },
-                          { name: 'purple', label: 'Tím', color: '#BD5FFF' },
-                          { name: 'blue', label: 'Xanh Dương', color: '#4F9FFF' },
-                          { name: 'green', label: 'Xanh Lá', color: '#4ADE80' },
-                          { name: 'orange', label: 'Cam', color: '#FF8A5B' }
-                        ].map(theme => (
-                          <button
-                            key={theme.name}
-                            onClick={() => {
-                              const newSettings = { ...globalSettings, themeColor: theme.name };
-                              setGlobalSettings(newSettings);
-                              localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                            }}
-                            className={`p-4 rounded-xl border-2 transition-all hover:scale-105 ${globalSettings.themeColor === theme.name
-                              ? 'border-current shadow-lg'
-                              : 'border-neutral-200'
-                              }`}
-                            style={{ backgroundColor: theme.color + '20', borderColor: globalSettings.themeColor === theme.name ? theme.color : undefined }}
-                          >
-                            <div
-                              className="w-8 h-8 rounded-full mx-auto mb-2"
-                              style={{ backgroundColor: theme.color }}
-                            />
-                            <p className="text-[10px] font-bold text-center">{theme.label}</p>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+              {/* Branding: Logo & Website Name */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  🏪 Thương hiệu & Logo
+                </label>
 
-                    {/* Branding: Logo & Website Name */}
-                    <div className="glass p-6 rounded-2xl">
-                      <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-                        🏪 Thương hiệu & Logo
-                      </label>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                      Tên website/cửa hàng
+                    </label>
+                    <input
+                      type="text"
+                      className="glass-input w-full rounded-2xl px-5 py-3 text-sm font-medium"
+                      placeholder="Vd: Floral Essence"
+                      value={globalSettings.websiteName}
+                      onChange={(e) => {
+                        const newSettings = { ...globalSettings, websiteName: e.target.value };
+                        setGlobalSettings(newSettings);
+                        localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                      }}
+                    />
+                  </div>
 
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
-                            Tên website/cửa hàng
-                          </label>
-                          <input
-                            type="text"
-                            className="glass-input w-full rounded-2xl px-5 py-3 text-sm font-medium"
-                            placeholder="Vd: Floral Essence"
-                            value={globalSettings.websiteName}
-                            onChange={(e) => {
-                              const newSettings = { ...globalSettings, websiteName: e.target.value };
-                              setGlobalSettings(newSettings);
-                              localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                            }}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
-                            Upload Logo
-                          </label>
-                          <div className="space-y-3">
-                            {globalSettings.logoUrl && (
-                              <div className="p-4 glass rounded-xl">
-                                <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>Logo hiện tại:</p>
-                                <img src={globalSettings.logoUrl} alt="Logo" className="max-h-20 w-auto mx-auto" />
-                                <button
-                                  onClick={() => {
-                                    const newSettings = { ...globalSettings, logoUrl: '' };
-                                    setGlobalSettings(newSettings);
-                                    localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                                  }}
-                                  className="mt-3 w-full text-xs text-rose-500 hover:text-rose-600 font-bold"
-                                >
-                                  Xóa logo
-                                </button>
-                              </div>
-                            )}
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
-
-                                const formData = new FormData();
-                                formData.append('image', file);
-
-                                try {
-                                  const response = await fetch(`${BACKEND_URL}/api/upload`, {
-                                    method: 'POST',
-                                    body: formData
-                                  });
-                                  const result = await response.json();
-
-                                  if (result.success) {
-                                    const newSettings = { ...globalSettings, logoUrl: result.url };
-                                    setGlobalSettings(newSettings);
-                                    localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                                    alert('✅ Upload logo thành công!');
-                                  }
-                                } catch (error) {
-                                  console.error('Upload error:', error);
-                                  alert('❌ Lỗi khi upload logo!');
-                                }
-
-                                e.target.value = '';
-                              }}
-                              className="glass-input w-full rounded-2xl px-5 py-3 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gradient-pink file:text-white hover:file:bg-opacity-90"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
-                              Kích thước logo PC
-                            </label>
-                            <select
-                              className="glass-input w-full rounded-2xl px-4 py-3 text-sm font-medium"
-                              value={globalSettings.logoSizeDesktop}
-                              onChange={(e) => {
-                                const newSettings = { ...globalSettings, logoSizeDesktop: e.target.value };
-                                setGlobalSettings(newSettings);
-                                localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                              }}
-                            >
-                              <option value="h-8">Nhỏ (32px)</option>
-                              <option value="h-10">Vừa (40px)</option>
-                              <option value="h-12">Lớn (48px)</option>
-                              <option value="h-16">Rất lớn (64px)</option>
-                              <option value="h-20">Cực lớn (80px)</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
-                              Kích thước logo Mobile
-                            </label>
-                            <select
-                              className="glass-input w-full rounded-2xl px-4 py-3 text-sm font-medium"
-                              value={globalSettings.logoSizeMobile}
-                              onChange={(e) => {
-                                const newSettings = { ...globalSettings, logoSizeMobile: e.target.value };
-                                setGlobalSettings(newSettings);
-                                localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                              }}
-                            >
-                              <option value="h-8">Nhỏ (32px)</option>
-                              <option value="h-10">Vừa (40px)</option>
-                              <option value="h-12">Lớn (48px)</option>
-                              <option value="h-16">Rất lớn (64px)</option>
-                              <option value="h-20">Cực lớn (80px)</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Favicon Upload */}
-                    <div className="glass p-6 rounded-2xl">
-                      <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-                        🌐 Favicon (icon tab trình duyệt)
-                      </label>
-                      <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-                        Upload ảnh nhỏ (16x16 hoặc 32x32px) để làm icon cho tab trình duyệt
-                      </p>
-
-                      {globalSettings.faviconUrl && (
-                        <div className="mb-4 flex items-center gap-4">
-                          <img
-                            src={globalSettings.faviconUrl}
-                            alt="Favicon preview"
-                            className="w-8 h-8 border-2 border-pink-200 rounded"
-                          />
+                  <div>
+                    <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                      Upload Logo
+                    </label>
+                    <div className="space-y-3">
+                      {globalSettings.logoUrl && (
+                        <div className="p-4 glass rounded-xl">
+                          <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>Logo hiện tại:</p>
+                          <img src={globalSettings.logoUrl} alt="Logo" className="max-h-20 w-auto mx-auto" />
                           <button
                             onClick={() => {
-                              const newSettings = { ...globalSettings, faviconUrl: '' };
+                              const newSettings = { ...globalSettings, logoUrl: '' };
                               setGlobalSettings(newSettings);
                               localStorage.setItem('global_settings', JSON.stringify(newSettings));
                             }}
-                            className="text-xs text-rose-500 hover:text-rose-600 font-bold"
+                            className="mt-3 w-full text-xs text-rose-500 hover:text-rose-600 font-bold"
                           >
-                            Xóa favicon
+                            Xóa logo
                           </button>
                         </div>
                       )}
-
                       <input
                         type="file"
                         accept="image/*"
@@ -1436,14 +1317,14 @@ const App: React.FC = () => {
                             const result = await response.json();
 
                             if (result.success) {
-                              const newSettings = { ...globalSettings, faviconUrl: result.url };
+                              const newSettings = { ...globalSettings, logoUrl: result.url };
                               setGlobalSettings(newSettings);
                               localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                              alert('✅ Upload favicon thành công!');
+                              alert('✅ Upload logo thành công!');
                             }
                           } catch (error) {
                             console.error('Upload error:', error);
-                            alert('❌ Lỗi khi upload favicon!');
+                            alert('❌ Lỗi khi upload logo!');
                           }
 
                           e.target.value = '';
@@ -1451,951 +1332,1144 @@ const App: React.FC = () => {
                         className="glass-input w-full rounded-2xl px-5 py-3 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gradient-pink file:text-white hover:file:bg-opacity-90"
                       />
                     </div>
+                  </div>
 
-                    {/* Google Fonts Selection */}
-                    <div className="glass p-6 rounded-2xl">
-                      <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-                        🔤 Chọn Font Chữ (Google Fonts)
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                        Kích thước logo PC
                       </label>
-                      <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-                        Tùy chỉnh font chữ cho tiêu đề, giá và nội dung
-                      </p>
-
-                      <div className="space-y-4">
-                        {/* Font for Product Title */}
-                        <div>
-                          <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
-                            Font Tiêu Đề Sản Phẩm
-                          </label>
-                          <select
-                            className="glass-input w-full rounded-2xl px-4 py-3 text-sm font-medium"
-                            value={globalSettings.fontTitle}
-                            onChange={(e) => {
-                              const newSettings = { ...globalSettings, fontTitle: e.target.value };
-                              setGlobalSettings(newSettings);
-                              localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                            }}
-                          >
-                            <option value="Playfair Display">Playfair Display (Elegant)</option>
-                            <option value="Montserrat">Montserrat (Modern)</option>
-                            <option value="Poppins">Poppins (Clean)</option>
-                            <option value="Merriweather">Merriweather (Classic)</option>
-                            <option value="Lora">Lora (Serif)</option>
-                            <option value="Raleway">Raleway (Thin)</option>
-                            <option value="Oswald">Oswald (Bold)</option>
-                          </select>
-                          <p className="text-xs mt-1 opacity-60" style={{ fontFamily: globalSettings.fontTitle }}>
-                            Preview: {globalSettings.fontTitle}
-                          </p>
-                        </div>
-
-                        {/* Font for Price */}
-                        <div>
-                          <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
-                            Font Giá Sản Phẩm
-                          </label>
-                          <select
-                            className="glass-input w-full rounded-2xl px-4 py-3 text-sm font-medium"
-                            value={globalSettings.fontPrice}
-                            onChange={(e) => {
-                              const newSettings = { ...globalSettings, fontPrice: e.target.value };
-                              setGlobalSettings(newSettings);
-                              localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                            }}
-                          >
-                            <option value="Roboto">Roboto (Standard)</option>
-                            <option value="Open Sans">Open Sans (Clean)</option>
-                            <option value="Lato">Lato (Friendly)</option>
-                            <option value="Source Sans Pro">Source Sans Pro (Professional)</option>
-                            <option value="Nunito">Nunito (Rounded)</option>
-                            <option value="Ubuntu">Ubuntu (Modern)</option>
-                          </select>
-                          <p className="text-xs mt-1 opacity-60" style={{ fontFamily: globalSettings.fontPrice }}>
-                            Preview: {globalSettings.fontPrice}
-                          </p>
-                        </div>
-
-                        {/* Font for Body Text */}
-                        <div>
-                          <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
-                            Font Nội Dung Chung
-                          </label>
-                          <select
-                            className="glass-input w-full rounded-2xl px-4 py-3 text-sm font-medium"
-                            value={globalSettings.fontBody}
-                            onChange={(e) => {
-                              const newSettings = { ...globalSettings, fontBody: e.target.value };
-                              setGlobalSettings(newSettings);
-                              localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                            }}
-                          >
-                            <option value="Inter">Inter (Modern)</option>
-                            <option value="Roboto">Roboto (Standard)</option>
-                            <option value="Open Sans">Open Sans (Readable)</option>
-                            <option value="Noto Sans">Noto Sans (Universal)</option>
-                            <option value="Work Sans">Work Sans (Geometric)</option>
-                            <option value="DM Sans">DM Sans (Clean)</option>
-                          </select>
-                          <p className="text-xs mt-1 opacity-60" style={{ fontFamily: globalSettings.fontBody }}>
-                            Preview: {globalSettings.fontBody}
-                          </p>
-                        </div>
-                      </div>
+                      <select
+                        className="glass-input w-full rounded-2xl px-4 py-3 text-sm font-medium"
+                        value={globalSettings.logoSizeDesktop}
+                        onChange={(e) => {
+                          const newSettings = { ...globalSettings, logoSizeDesktop: e.target.value };
+                          setGlobalSettings(newSettings);
+                          localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                        }}
+                      >
+                        <option value="h-8">Nhỏ (32px)</option>
+                        <option value="h-10">Vừa (40px)</option>
+                        <option value="h-12">Lớn (48px)</option>
+                        <option value="h-16">Rất lớn (64px)</option>
+                        <option value="h-20">Cực lớn (80px)</option>
+                      </select>
                     </div>
 
-                    {/* SEO Settings */}
-                    <div className="glass p-6 rounded-2xl">
-                      <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-                        📊 Tối ưu hóa SEO (Google Search)
+                    <div>
+                      <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                        Kích thước logo Mobile
                       </label>
-                      <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-                        Cải thiện thứ hạng website trên Google
-                      </p>
-
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
-                            Tiêu đề SEO (Title Tag)
-                          </label>
-                          <input
-                            type="text"
-                            className="glass-input w-full rounded-2xl px-5 py-3 text-sm"
-                            placeholder="Vd: Tiệm Hoa Tươi Cao Cấp - Giao Hàng Nhanh"
-                            value={globalSettings.seoTitle}
-                            onChange={(e) => {
-                              const newSettings = { ...globalSettings, seoTitle: e.target.value };
-                              setGlobalSettings(newSettings);
-                              localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                            }}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
-                            Mô tả SEO (Meta Description)
-                          </label>
-                          <textarea
-                            className="glass-input w-full rounded-2xl px-5 py-3 text-sm"
-                            rows={3}
-                            placeholder="Vd: Chuyên cung cấp hoa tươi cao cấp, bó hoa đẹp, giao hoa tận nơi..."
-                            value={globalSettings.seoDescription}
-                            onChange={(e) => {
-                              const newSettings = { ...globalSettings, seoDescription: e.target.value };
-                              setGlobalSettings(newSettings);
-                              localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                            }}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
-                            Từ khóa SEO (Keywords) - Cách nhau bởi dấu phẩy
-                          </label>
-                          <input
-                            type="text"
-                            className="glass-input w-full rounded-2xl px-5 py-3 text-sm"
-                            placeholder="hoa tươi, bó hoa, tiệm hoa, hoa sinh nhật"
-                            value={globalSettings.seoKeywords}
-                            onChange={(e) => {
-                              const newSettings = { ...globalSettings, seoKeywords: e.target.value };
-                              setGlobalSettings(newSettings);
-                              localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Feature Toggles */}
-                    <div className="glass p-6 rounded-2xl">
-                      <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-                        ⚡ Chức năng website
-                      </label>
-
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
-                              🖼️ Bật/Tắt Lightbox xem ảnh
-                            </label>
-                            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                              Cho phép khách hàng xem ảnh toàn màn hình
-                            </p>
-                          </div>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              className="sr-only peer"
-                              checked={globalSettings.enableLightbox}
-                              onChange={(e) => {
-                                const newSettings = { ...globalSettings, enableLightbox: e.target.checked };
-                                setGlobalSettings(newSettings);
-                                localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                              }}
-                            />
-                            <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-pink"></div>
-                          </label>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
-                              💰 Hiển thị giá sản phẩm
-                            </label>
-                            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                            </p>
-                          </div>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              className="sr-only peer"
-                              checked={globalSettings.enablePriceDisplay}
-                              onChange={(e) => {
-                                const newSettings = { ...globalSettings, enablePriceDisplay: e.target.checked };
-                                setGlobalSettings(newSettings);
-                                localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                              }}
-                            />
-                            <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-pink"></div>
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Zalo Bot Settings */}
-                    <div className="glass p-6 rounded-2xl">
-                      <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-                        🤖 Cấu hình Zalo Bot (Gửi thông báo đơn hàng)
-                      </label>
-                      <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-                        Điền thông tin để kích hoạt tính năng gửi tin nhắn tự động qua Zalo Bot
-                      </p>
-
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
-                            Bot Token
-                          </label>
-                          <input
-                            type="password"
-                            className="glass-input w-full rounded-2xl px-5 py-3 text-sm"
-                            placeholder="Nhập Access Token của Bot..."
-                            value={globalSettings.zaloBotToken || ''}
-                            onChange={(e) => {
-                              const newSettings = { ...globalSettings, zaloBotToken: e.target.value };
-                              setGlobalSettings(newSettings);
-                              localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                            }}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
-                            Admin Zalo IDs (Người nhận thông báo)
-                          </label>
-                          <input
-                            type="text"
-                            className="glass-input w-full rounded-2xl px-5 py-3 text-sm"
-                            placeholder="Vd: 84900000001, 84900000002 (Cách nhau dấu phẩy)"
-                            value={globalSettings.zaloAdminIds || ''}
-                            onChange={(e) => {
-                              const newSettings = { ...globalSettings, zaloAdminIds: e.target.value };
-                              setGlobalSettings(newSettings);
-                              localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                            }}
-                          />
-                          <p className="text-xs mt-2" style={{ color: 'var(--text-secondary)' }}>
-                            * Nhập User ID Zalo của những người cần nhận thông báo đơn hàng mới.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="glass-pink p-4 rounded-xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      💡 <span className="font-semibold">Lưu ý:</span> Thay đổi sẽ được lưu tự động và áp dụng ngay lập tức.
+                      <select
+                        className="glass-input w-full rounded-2xl px-4 py-3 text-sm font-medium"
+                        value={globalSettings.logoSizeMobile}
+                        onChange={(e) => {
+                          const newSettings = { ...globalSettings, logoSizeMobile: e.target.value };
+                          setGlobalSettings(newSettings);
+                          localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                        }}
+                      >
+                        <option value="h-8">Nhỏ (32px)</option>
+                        <option value="h-10">Vừa (40px)</option>
+                        <option value="h-12">Lớn (48px)</option>
+                        <option value="h-16">Rất lớn (64px)</option>
+                        <option value="h-20">Cực lớn (80px)</option>
+                      </select>
                     </div>
                   </div>
-                )}
-              </section>
-
-              {/* QUẢN LÝ DANH MỤC */}
-              <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
-                <div
-                  className="flex justify-between items-center mb-6 cursor-pointer group"
-                  onClick={() => toggleSection('categories')}
-                >
-                  <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
-                    <span className="w-1.5 h-6 bg-gradient-pink rounded-full inline-block"></span>
-                    Cấu trúc danh mục
-                  </h3>
-                  <button className="pill-button glass px-4 py-2 hover:glass-strong transition-all">
-                    <svg
-                      className={`w-5 h-5 transition-transform duration-300 ${expandedSections.categories ? 'rotate-180' : ''}`}
-                      style={{ color: 'var(--primary-pink)' }}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
                 </div>
-
-                {expandedSections.categories && (
-                  <div className="space-y-6 animate-in fade-in duration-300">
-                    <div className="flex gap-3 mb-6">
-                      <input
-                        type="text"
-                        placeholder="Tên danh mục mới (Vd: Hoa tươi 20/10)..."
-                        className="glass-input flex-grow rounded-2xl px-5 py-3 text-sm"
-                        value={newCategoryName}
-                        onChange={e => setNewCategoryName(e.target.value)}
-                      />
-                      <button onClick={addCategory} className="pill-button bg-gradient-pink text-white px-8 py-3 text-sm font-bold shadow-lg hover-glow-pink">Thêm mục</button>
-                    </div>
-
-                    {/* Preview Button */}
-                    <div className="mb-4 p-4 glass-gradient rounded-xl border border-white/40">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <svg className="w-5 h-5" style={{ color: 'var(--secondary-purple)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                          <div>
-                            <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Xem trước thứ tự danh mục</p>
-                            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Thứ tự này sẽ hiển thị trên trang chủ</p>
-                          </div>
-                        </div>
-                        <a
-                          href="#"
-                          target="_blank"
-                          className="pill-button bg-gradient-purple text-white px-4 py-2 text-xs font-bold shadow-md hover-glow-pink"
-                        >
-                          Mở trang chủ
-                        </a>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      {categories.map((cat, index) => {
-                        const productCount = products.filter(p => p.category === cat).length;
-                        return (
-                          <div
-                            key={cat}
-                            draggable
-                            onDragStart={(e) => handleDragStart(e, cat)}
-                            onDragEnd={handleDragEnd}
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDrop(e, cat)}
-                            className={`glass p-4 rounded-xl flex items-center gap-3 text-sm font-medium group hover:glass-strong hover:scale-[1.02] transition-all cursor-move shadow-md border-white/40 ${draggedCategory === cat ? 'opacity-50 scale-95' : ''
-                              }`}
-                          >
-                            {/* Drag Handle Icon */}
-                            <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M8 5a2 2 0 100 4 2 2 0 000-4zM8 11a2 2 0 100 4 2 2 0 000-4zM8 17a2 2 0 100 4 2 2 0 000-4zM16 5a2 2 0 100 4 2 2 0 000-4zM16 11a2 2 0 100 4 2 2 0 000-4zM16 17a2 2 0 100 4 2 2 0 000-4z" />
-                            </svg>
-
-                            {/* Position Number */}
-                            <span className="w-8 h-8 bg-gradient-pink text-white rounded-xl flex items-center justify-center text-xs font-bold shadow-lg flex-shrink-0 glow-pink">
-                              {index + 1}
-                            </span>
-
-                            {/* Category Name */}
-                            <span className="flex-grow font-semibold" style={{ color: 'var(--text-primary)' }}>{cat}</span>
-
-                            {/* Product Count Badge */}
-                            <span className={`badge-glass px-3 py-1 text-xs font-bold flex-shrink-0 ${productCount > 0
-                              ? 'bg-gradient-soft text-green-700'
-                              : 'bg-white/20'
-                              }`} style={{ color: productCount > 0 ? 'var(--primary-pink)' : 'var(--text-secondary)' }}>
-                              {productCount} SP
-                            </span>
-
-                            {/* Reorder Buttons */}
-                            <div className="flex gap-1">
-                              <button
-                                onClick={() => moveCategoryUp(index)}
-                                disabled={index === 0}
-                                className={`p-2 rounded-lg transition-all ${index === 0
-                                  ? 'text-neutral-200 cursor-not-allowed'
-                                  : 'text-neutral-400 hover:text-blue-600 hover:bg-blue-50'
-                                  }`}
-                                title="Di chuyển lên"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 15l7-7 7 7" /></svg>
-                              </button>
-                              <button
-                                onClick={() => moveCategoryDown(index)}
-                                disabled={index === categories.length - 1}
-                                className={`p-2 rounded-lg transition-all ${index === categories.length - 1
-                                  ? 'text-neutral-200 cursor-not-allowed'
-                                  : 'text-neutral-400 hover:text-blue-600 hover:bg-blue-50'
-                                  }`}
-                                title="Di chuyển xuống"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
-                              </button>
-                            </div>
-
-                            {/* Settings Button */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingCategory(cat);
-                                setShowCategorySettingsModal(true);
-                              }}
-                              className="p-2 text-neutral-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all"
-                              title="Cài đặt danh mục"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              </svg>
-                            </button>
-
-                            {/* Delete Button */}
-                            <button
-                              onClick={() => deleteCategory(cat)}
-                              className="p-2 text-neutral-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-                              title="Xóa danh mục"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeWidth="2" strokeLinecap="round" /></svg>
-                            </button>
-                          </div>
-                        );
-                      })}
-
-                      {categories.length === 0 && (
-                        <div className="text-center py-8 text-neutral-400 text-sm">
-                          <svg className="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
-                          Chưa có danh mục nào. Thêm danh mục đầu tiên!
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </section>
-
-
-              {/* QUẢN LÝ NHANH SẢN PHẨM */}
-              <section>
-                <div
-                  className="flex justify-between items-center mb-6 cursor-pointer group glass-strong p-4 rounded-2xl"
-                  onClick={() => toggleSection('inventory')}
-                >
-                  <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
-                    <span className="w-1.5 h-6 bg-gradient-sunset rounded-full inline-block"></span>
-                    Kho hàng hiện tại ({products.length})
-                  </h3>
-                  <button className="pill-button glass px-4 py-2 hover:glass-strong transition-all">
-                    <svg
-                      className={`w-5 h-5 transition-transform duration-300 ${expandedSections.inventory ? 'rotate-180' : ''}`}
-                      style={{ color: 'var(--primary-pink)' }}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                </div>
-
-                {expandedSections.inventory && (
-
-                  <div className="space-y-8">
-                    {/* Products with valid categories */}
-                    {categories.map((category) => {
-                      const categoryProducts = products
-                        .filter(p => p.category === category)
-                        .sort((a, b) => (a.order || 0) - (b.order || 0));
-
-                      if (categoryProducts.length === 0) return null;
-
-                      return (
-                        <div key={category} className="glass-strong p-6 rounded-2xl border border-white/30 shadow-lg">
-                          <div className="flex items-center justify-between mb-4">
-                            <h4 className="font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                              <span className="w-2 h-2 bg-gradient-pink rounded-full glow-pink"></span>
-                              {category}
-                            </h4>
-                            <span className="badge-glass bg-gradient-soft text-xs font-bold" style={{ color: 'var(--primary-pink)' }}>{categoryProducts.length} sản phẩm</span>
-                          </div>
-
-                          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                            {categoryProducts.map(p => (
-                              <div
-                                key={p.id}
-                                draggable
-                                onDragStart={(e) => handleProductDragStart(e, p.id)}
-                                onDragEnd={handleProductDragEnd}
-                                onDragOver={handleDragOver}
-                                onDrop={(e) => handleProductDrop(e, p.id, category)}
-                                className={`relative group cursor-move ${draggedProduct === p.id ? 'opacity-50 scale-95' : ''
-                                  }`}
-                              >
-                                <div className="absolute top-2 left-2 z-10 bg-neutral-900/70 text-white px-2 py-1 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                                  ⋮⋮ Kéo
-                                </div>
-                                <FlowerCard
-                                  product={p}
-                                  isAdmin
-                                  onEdit={openEditModal}
-                                  globalAspectRatio={
-                                    globalSettings.aspectRatio === 'custom'
-                                      ? (globalSettings.customValue || '3/4').replace(/:/g, '/').replace(/x/gi, '/')
-                                      : globalSettings.aspectRatio
-                                  }
-                                  mediaMetadata={mediaMetadata}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Products with deleted/invalid categories */}
-                    {(() => {
-                      const uncategorizedProducts = products.filter(p => !categories.includes(p.category));
-                      if (uncategorizedProducts.length === 0) return null;
-
-                      return (
-                        <div className="glass-strong p-6 rounded-2xl border-2 border-yellow-300/50 shadow-lg bg-yellow-50/20">
-                          <div className="flex items-center justify-between mb-4">
-                            <div>
-                              <h4 className="font-bold flex items-center gap-2 text-yellow-700">
-                                <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
-                                ⚠️ Sản phẩm không có danh mục
-                              </h4>
-                              <p className="text-xs text-yellow-600 mt-1">
-                                Danh mục của các sản phẩm này đã bị xóa. Vui lòng chỉnh sửa để gán lại danh mục mới.
-                              </p>
-                            </div>
-                            <span className="badge-glass bg-yellow-500 text-white text-xs font-bold px-3 py-1">
-                              {uncategorizedProducts.length} sản phẩm
-                            </span>
-                          </div>
-
-                          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                            {uncategorizedProducts.map(p => (
-                              <div key={p.id} className="relative group">
-                                <div className="absolute -top-2 -right-2 z-20 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg animate-pulse">
-                                  ⚠️
-                                </div>
-                                <div className="absolute bottom-2 left-2 right-2 z-20 bg-red-500/90 text-white text-[10px] font-bold px-2 py-1 rounded text-center">
-                                  Danh mục: "{p.category}" đã xóa
-                                </div>
-                                <FlowerCard
-                                  product={p}
-                                  isAdmin
-                                  onEdit={openEditModal}
-                                  globalAspectRatio={
-                                    globalSettings.aspectRatio === 'custom'
-                                      ? (globalSettings.customValue || '3/4').replace(/:/g, '/').replace(/x/gi, '/')
-                                      : globalSettings.aspectRatio
-                                  }
-                                  mediaMetadata={mediaMetadata}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {products.length === 0 && (
-                      <div className="text-center py-16 text-neutral-400">
-                        <svg className="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
-                        <p className="text-sm font-medium">Chưa có sản phẩm nào. Tạo sản phẩm đầu tiên!</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </section>
-            </>
-          ) : activeTab === 'media' ? (
-            <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
-              <MediaLibrary
-                onMetadataChange={setMediaMetadata}
-                onImageDelete={handleImageDeletedFromLibrary}
-              />
-            </section>
-          ) : activeTab === 'css' ? (
-            <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
-              <div className="mb-6">
-                <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
-                  <span className="w-1.5 h-6 bg-gradient-pink rounded-full inline-block"></span>
-                  🎨 Custom CSS
-                </h3>
-                <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
-                  Nhập CSS tùy chỉnh để thay đổi giao diện website. CSS sẽ được áp dụng ngay lập tức.
-                </p>
               </div>
 
-              <div className="space-y-4">
-                <div className="glass p-6 rounded-2xl">
-                  <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-                    CSS Code
-                  </label>
-                  <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-                    Ví dụ: .glass {'{ background: rgba(255, 255, 255, 0.1); }'}
-                  </p>
-                  <textarea
-                    className="glass-input w-full rounded-2xl px-5 py-4 text-sm font-mono"
-                    rows={20}
-                    placeholder="/* Nhập CSS tùy chỉnh tại đây */&#10;.your-class {&#10;  color: #FF6B9D;&#10;  font-size: 16px;&#10;}"
-                    value={globalSettings.customCSS}
-                    onChange={(e) => {
-                      const newSettings = { ...globalSettings, customCSS: e.target.value };
-                      setGlobalSettings(newSettings);
-                      localStorage.setItem('global_settings', JSON.stringify(newSettings));
+              {/* Favicon Upload */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  🌐 Favicon (icon tab trình duyệt)
+                </label>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  Upload ảnh nhỏ (16x16 hoặc 32x32px) để làm icon cho tab trình duyệt
+                </p>
+
+                <div className="space-y-3">
+                  {globalSettings.faviconUrl ? (
+                    <div className="p-4 glass rounded-xl flex items-center gap-4">
+                      <img src={globalSettings.faviconUrl} alt="Favicon" className="w-8 h-8 object-contain" />
+                      <div className="flex-1">
+                        <p className="text-xs font-bold text-green-600 mb-1">Đang sử dụng</p>
+                        <p className="text-[10px] text-gray-500 break-all">{globalSettings.faviconUrl}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const newSettings = { ...globalSettings, faviconUrl: '' };
+                          setGlobalSettings(newSettings);
+                          localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                        }}
+                        className="text-xs text-rose-500 hover:text-rose-600 font-bold px-3 py-1 rounded bg-rose-50 hover:bg-rose-100"
+                      >
+                        Xóa
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-center">
+                      <p className="text-xs text-gray-400">Chưa có Favicon tùy chỉnh</p>
+                    </div>
+                  )}
+
+                  <input
+                    type="file"
+                    accept="image/x-icon,image/png,image/gif"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      const formData = new FormData();
+                      formData.append('image', file);
+
+                      try {
+                        const response = await fetch(`${BACKEND_URL}/api/upload`, {
+                          method: 'POST',
+                          body: formData
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                          const newSettings = { ...globalSettings, faviconUrl: result.url };
+                          setGlobalSettings(newSettings);
+                          localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                          alert('✅ Upload favicon thành công! Hãy F5 lại trang để thấy thay đổi.');
+                        }
+                      } catch (error) {
+                        console.error('Upload error:', error);
+                        alert('❌ Lỗi khi upload favicon!');
+                      }
+
+                      e.target.value = '';
                     }}
-                    style={{
-                      fontFamily: 'Monaco, Consolas, "Courier New", monospace',
-                      fontSize: '13px',
-                      lineHeight: '1.6'
-                    }}
+                    className="glass-input w-full rounded-2xl px-5 py-3 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gradient-pink file:text-white hover:file:bg-opacity-90"
                   />
                 </div>
+              </div>
 
-                <div className="glass-pink p-4 rounded-xl">
-                  <p className="text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
-                    💡 Mẹo sử dụng Custom CSS:
-                  </p>
-                  <ul className="text-xs space-y-1" style={{ color: 'var(--text-secondary)' }}>
-                    <li>• CSS sẽ tự động lưu và áp dụng khi bạn nhập</li>
-                    <li>• Sử dụng !important nếu cần ghi đè style mặc định</li>
-                    <li>• Test trên  cả PC và Mobile để đảm bảo responsive</li>
-                    <li>• Có thể tùy chỉnh: màu sắc, font chữ, khoảng cách, hiệu ứng, v.v.</li>
-                  </ul>
+
+              {/* Background Image Settings */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  🎆 Hình nền Website (Background)
+                </label>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  Chọn hình nền cho toàn bộ trang web (ưu tiên ảnh nhẹ, màu nhạt)
+                </p>
+
+                <div className="space-y-4">
+                  {globalSettings.backgroundImage ? (
+                    <div className="relative group rounded-xl overflow-hidden border border-gray-200">
+                      <div className="h-32 w-full bg-cover bg-center" style={{ backgroundImage: `url(${globalSettings.backgroundImage})` }}></div>
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => {
+                            const newSettings = { ...globalSettings, backgroundImage: '' };
+                            setGlobalSettings(newSettings);
+                            localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                          }}
+                          className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold text-xs hover:bg-red-600"
+                        >
+                          Xóa hình nền
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-20 w-full bg-gray-50 border border-dashed border-gray-300 rounded-xl flex items-center justify-center">
+                      <p className="text-xs text-gray-400">Đang dùng màu nền mặc định</p>
+                    </div>
+                  )}
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      const formData = new FormData();
+                      formData.append('image', file);
+
+                      try {
+                        const response = await fetch(`${BACKEND_URL}/api/upload`, {
+                          method: 'POST',
+                          body: formData
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                          const newSettings = { ...globalSettings, backgroundImage: result.url };
+                          setGlobalSettings(newSettings);
+                          localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                          alert('✅ Đổi hình nền thành công!');
+                        }
+                      } catch (error) {
+                        console.error('Upload error:', error);
+                        alert('❌ Lỗi khi upload hình nền!');
+                      }
+
+                      e.target.value = '';
+                    }}
+                    className="glass-input w-full rounded-2xl px-5 py-3 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gradient-pink file:text-white hover:file:bg-opacity-90"
+                  />
                 </div>
+              </div>
 
-                {globalSettings.customCSS && (
-                  <button
-                    onClick={() => {
-                      if (confirm('Bạn có chắc muốn xóa toàn bộ Custom CSS?')) {
-                        const newSettings = { ...globalSettings, customCSS: '' };
+              {/* Google Fonts Selection */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  🔤 Chọn Font Chữ (Google Fonts)
+                </label>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  Tùy chỉnh font chữ cho tiêu đề, giá và nội dung
+                </p>
+
+                <div className="space-y-4">
+                  {/* Font for Product Title */}
+                  <div>
+                    <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                      Font Tiêu Đề Sản Phẩm
+                    </label>
+                    <select
+                      className="glass-input w-full rounded-2xl px-4 py-3 text-sm font-medium"
+                      value={globalSettings.fontTitle}
+                      onChange={(e) => {
+                        const newSettings = { ...globalSettings, fontTitle: e.target.value };
                         setGlobalSettings(newSettings);
                         localStorage.setItem('global_settings', JSON.stringify(newSettings));
-                        alert('✅ Đã xóa Custom CSS!');
-                      }
-                    }}
-                    className="w-full py-3 bg-rose-50 text-rose-600 rounded-xl text-sm font-bold hover:bg-rose-100 transition-all"
-                  >
-                    🗑️ Xóa toàn bộ CSS
-                  </button>
-                )}
-              </div>
-            </section>
-          ) : activeTab === 'analytics' ? (
-            <>
-              {/* Analytics Dashboard Header */}
-              <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
-                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                  <div>
-                    <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
-                      <span className="w-1.5 h-6 bg-gradient-sunset rounded-full inline-block"></span>
-                      📊 Bảng Tổng Quan Analytics
-                    </h3>
-                    <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
-                      Thống kê lượt xem và tương tác của khách hàng
+                      }}
+                    >
+                      <option value="Playfair Display">Playfair Display (Elegant)</option>
+                      <option value="Montserrat">Montserrat (Modern)</option>
+                      <option value="Poppins">Poppins (Clean)</option>
+                      <option value="Merriweather">Merriweather (Classic)</option>
+                      <option value="Lora">Lora (Serif)</option>
+                      <option value="Raleway">Raleway (Thin)</option>
+                      <option value="Oswald">Oswald (Bold)</option>
+                    </select>
+                    <p className="text-xs mt-1 opacity-60" style={{ fontFamily: globalSettings.fontTitle }}>
+                      Preview: {globalSettings.fontTitle}
                     </p>
                   </div>
 
-                  {/* Analytics Actions */}
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => {
-                        exportAnalytics();
-                        alert('✅ Đã tải xuống file analytics!');
+                  {/* Font for Price */}
+                  <div>
+                    <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                      Font Giá Sản Phẩm
+                    </label>
+                    <select
+                      className="glass-input w-full rounded-2xl px-4 py-3 text-sm font-medium"
+                      value={globalSettings.fontPrice}
+                      onChange={(e) => {
+                        const newSettings = { ...globalSettings, fontPrice: e.target.value };
+                        setGlobalSettings(newSettings);
+                        localStorage.setItem('global_settings', JSON.stringify(newSettings));
                       }}
-                      className="pill-button glass-pink px-4 py-2 text-sm font-bold hover:glass-strong transition-all"
-                      title="Tải xuống dữ liệu analytics dạng JSON"
                     >
-                      📥 Tải dữ liệu
-                    </button>
-                    <button
-                      onClick={() => {
-                        clearOldAnalytics(30);
-                        alert('✅ Đã xóa dữ liệu cũ hơn 30 ngày!');
-                        window.location.reload();
+                      <option value="Roboto">Roboto (Standard)</option>
+                      <option value="Open Sans">Open Sans (Clean)</option>
+                      <option value="Lato">Lato (Friendly)</option>
+                      <option value="Source Sans Pro">Source Sans Pro (Professional)</option>
+                      <option value="Nunito">Nunito (Rounded)</option>
+                      <option value="Ubuntu">Ubuntu (Modern)</option>
+                    </select>
+                    <p className="text-xs mt-1 opacity-60" style={{ fontFamily: globalSettings.fontPrice }}>
+                      Preview: {globalSettings.fontPrice}
+                    </p>
+                  </div>
+
+                  {/* Font for Body Text */}
+                  <div>
+                    <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                      Font Nội Dung Chung
+                    </label>
+                    <select
+                      className="glass-input w-full rounded-2xl px-4 py-3 text-sm font-medium"
+                      value={globalSettings.fontBody}
+                      onChange={(e) => {
+                        const newSettings = { ...globalSettings, fontBody: e.target.value };
+                        setGlobalSettings(newSettings);
+                        localStorage.setItem('global_settings', JSON.stringify(newSettings));
                       }}
-                      className="pill-button glass px-4 py-2 text-sm font-bold hover:glass-strong transition-all"
-                      title="Xóa dữ liệu cũ hơn 30 ngày"
                     >
-                      🗑️ Xóa dữ liệu cũ
-                    </button>
-                    <button
-                      onClick={() => clearAllAnalytics()}
-                      className="pill-button glass-pink px-4 py-2 text-sm font-bold hover:bg-rose-100 transition-all"
-                      style={{ color: 'var(--primary-pink)' }}
-                      title="Xóa toàn bộ dữ liệu thống kê"
-                    >
-                      ⚠️ Xóa tất cả
-                    </button>
+                      <option value="Inter">Inter (Modern)</option>
+                      <option value="Roboto">Roboto (Standard)</option>
+                      <option value="Open Sans">Open Sans (Readable)</option>
+                      <option value="Noto Sans">Noto Sans (Universal)</option>
+                      <option value="Work Sans">Work Sans (Geometric)</option>
+                      <option value="DM Sans">DM Sans (Clean)</option>
+                    </select>
+                    <p className="text-xs mt-1 opacity-60" style={{ fontFamily: globalSettings.fontBody }}>
+                      Preview: {globalSettings.fontBody}
+                    </p>
                   </div>
                 </div>
-              </section>
+              </div>
 
-              {/* Analytics Dashboard Component */}
-              <AnalyticsDashboard
-                analyticsData={analyticsData}
-                products={products}
-              />
-            </>
-          ) : activeTab === 'orders' ? (
-            <>
-              {/* Orders Management Component */}
-              <OrdersManagement />
-            </>
-          ) : null}
-        </main>
+              {/* SEO Settings */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  📊 Tối ưu hóa SEO (Google Search)
+                </label>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  Cải thiện thứ hạng website trên Google
+                </p>
 
-        {/* Floating Action Button - Add Product */}
-        {activeTab === 'products' && (
-          <button
-            onClick={() => {
-              setEditingProduct({ title: '', category: categories[0] || '', images: [], switchInterval: 3000, aspectRatio: '3/4', originalPrice: 0, salePrice: 0 });
-              setShowEditModal(true);
-            }}
-            className="fixed bottom-8 right-8 z-50 bg-gradient-pink text-white w-16 h-16 rounded-full shadow-2xl hover-glow-pink flex items-center justify-center group hover:scale-110 active:scale-95 transition-all"
-            title="Thêm sản phẩm mới"
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                      Tiêu đề SEO (Title Tag)
+                    </label>
+                    <input
+                      type="text"
+                      className="glass-input w-full rounded-2xl px-5 py-3 text-sm"
+                      placeholder="Vd: Tiệm Hoa Tươi Cao Cấp - Giao Hàng Nhanh"
+                      value={globalSettings.seoTitle}
+                      onChange={(e) => {
+                        const newSettings = { ...globalSettings, seoTitle: e.target.value };
+                        setGlobalSettings(newSettings);
+                        localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                      Mô tả SEO (Meta Description)
+                    </label>
+                    <textarea
+                      className="glass-input w-full rounded-2xl px-5 py-3 text-sm"
+                      rows={3}
+                      placeholder="Vd: Chuyên cung cấp hoa tươi cao cấp, bó hoa đẹp, giao hoa tận nơi..."
+                      value={globalSettings.seoDescription}
+                      onChange={(e) => {
+                        const newSettings = { ...globalSettings, seoDescription: e.target.value };
+                        setGlobalSettings(newSettings);
+                        localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                      Từ khóa SEO (Keywords) - Cách nhau bởi dấu phẩy
+                    </label>
+                    <input
+                      type="text"
+                      className="glass-input w-full rounded-2xl px-5 py-3 text-sm"
+                      placeholder="hoa tươi, bó hoa, tiệm hoa, hoa sinh nhật"
+                      value={globalSettings.seoKeywords}
+                      onChange={(e) => {
+                        const newSettings = { ...globalSettings, seoKeywords: e.target.value };
+                        setGlobalSettings(newSettings);
+                        localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Feature Toggles */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  ⚡ Chức năng website
+                </label>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                        🖼️ Bật/Tắt Lightbox xem ảnh
+                      </label>
+                      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                        Cho phép khách hàng xem ảnh toàn màn hình
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={globalSettings.enableLightbox}
+                        onChange={(e) => {
+                          const newSettings = { ...globalSettings, enableLightbox: e.target.checked };
+                          setGlobalSettings(newSettings);
+                          localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                        }}
+                      />
+                      <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-pink"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                        💰 Hiển thị giá sản phẩm
+                      </label>
+                      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={globalSettings.enablePriceDisplay}
+                        onChange={(e) => {
+                          const newSettings = { ...globalSettings, enablePriceDisplay: e.target.checked };
+                          setGlobalSettings(newSettings);
+                          localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                        }}
+                      />
+                      <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-pink"></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Zalo Bot Settings */}
+              <div className="glass p-6 rounded-2xl">
+                <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+                  🤖 Cấu hình Zalo Bot (Gửi thông báo đơn hàng)
+                </label>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  Điền thông tin để kích hoạt tính năng gửi tin nhắn tự động qua Zalo Bot
+                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                      Bot Token
+                    </label>
+                    <input
+                      type="password"
+                      className="glass-input w-full rounded-2xl px-5 py-3 text-sm"
+                      placeholder="Nhập Access Token của Bot..."
+                      value={globalSettings.zaloBotToken || ''}
+                      onChange={(e) => {
+                        const newSettings = { ...globalSettings, zaloBotToken: e.target.value };
+                        setGlobalSettings(newSettings);
+                        localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold mb-2 block" style={{ color: 'var(--text-secondary)' }}>
+                      Admin Zalo IDs (Người nhận thông báo)
+                    </label>
+                    <input
+                      type="text"
+                      className="glass-input w-full rounded-2xl px-5 py-3 text-sm"
+                      placeholder="Vd: 84900000001, 84900000002 (Cách nhau dấu phẩy)"
+                      value={globalSettings.zaloAdminIds || ''}
+                      onChange={(e) => {
+                        const newSettings = { ...globalSettings, zaloAdminIds: e.target.value };
+                        setGlobalSettings(newSettings);
+                        localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                      }}
+                    />
+                    <p className="text-xs mt-2" style={{ color: 'var(--text-secondary)' }}>
+                      * Nhập User ID Zalo của những người cần nhận thông báo đơn hàng mới.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass-pink p-4 rounded-xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+                💡 <span className="font-semibold">Lưu ý:</span> Thay đổi sẽ được lưu tự động và áp dụng ngay lập tức.
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* QUẢN LÝ DANH MỤC */}
+        <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
+          <div
+            className="flex justify-between items-center mb-6 cursor-pointer group"
+            onClick={() => toggleSection('categories')}
           >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" />
-            </svg>
-            {/* Tooltip */}
-            <span className="absolute -top-12 right-0 bg-neutral-900 text-white text-xs font-bold px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-              ✨ Thêm sản phẩm mới
-            </span>
-          </button>
-        )}
+            <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
+              <span className="w-1.5 h-6 bg-gradient-pink rounded-full inline-block"></span>
+              Cấu trúc danh mục
+            </h3>
+            <button className="pill-button glass px-4 py-2 hover:glass-strong transition-all">
+              <svg
+                className={`w-5 h-5 transition-transform duration-300 ${expandedSections.categories ? 'rotate-180' : ''}`}
+                style={{ color: 'var(--primary-pink)' }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
 
-        {/* MODAL SỬA TÊN DANH MỤC */}
-        {showCategoryEditModal && editingCategory && (
-          <CategoryEditModal
-            categoryName={editingCategory}
-            displayName={categorySettings[editingCategory]?.displayName}
-            onSave={renameCategoryInSettings}
-            onClose={closeCategoryEditModal}
-          />
-        )}
+          {expandedSections.categories && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <div className="flex gap-3 mb-6">
+                <input
+                  type="text"
+                  placeholder="Tên danh mục mới (Vd: Hoa tươi 20/10)..."
+                  className="glass-input flex-grow rounded-2xl px-5 py-3 text-sm"
+                  value={newCategoryName}
+                  onChange={e => setNewCategoryName(e.target.value)}
+                />
+                <button onClick={addCategory} className="pill-button bg-gradient-pink text-white px-8 py-3 text-sm font-bold shadow-lg hover-glow-pink">Thêm mục</button>
+              </div>
 
-        {/* MODAL CÀI ĐẶT DANH MỤC */}
-        {showCategorySettingsModal && editingCategory && (
-          <CategorySettingsModal
-            categoryName={editingCategory}
-            settings={categorySettings[editingCategory] || {
-              name: editingCategory,
-              itemsPerPage: 8,
-              paginationType: 'none',
-              imageTransition: 'fade',
-              imageInterval: 3000
-            }}
-            onUpdate={(updates) => updateCategorySettings(editingCategory, updates)}
-            onClose={() => setShowCategorySettingsModal(false)}
-            onRename={() => {
-              setShowCategorySettingsModal(false);
-              setShowCategoryEditModal(true);
-            }}
-          />
-        )}
+              {/* Preview Button */}
+              <div className="mb-4 p-4 glass-gradient rounded-xl border border-white/40">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5" style={{ color: 'var(--secondary-purple)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                    <div>
+                      <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Xem trước thứ tự danh mục</p>
+                      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Thứ tự này sẽ hiển thị trên trang chủ</p>
+                    </div>
+                  </div>
+                  <a
+                    href="#"
+                    target="_blank"
+                    className="pill-button bg-gradient-purple text-white px-4 py-2 text-xs font-bold shadow-md hover-glow-pink"
+                  >
+                    Mở trang chủ
+                  </a>
+                </div>
+              </div>
 
-        {/* MODAL PRODUCT FORM - NEW WITH VARIANTS */}
-        {showEditModal && (
-          <ProductFormModal
-            product={editingProduct as FlowerProduct | null}
-            categories={categories}
-            onSave={handleAddOrUpdateProduct}
-            onCancel={closeEditModal}
-            onDelete={deleteProduct}
-            onUploadImage={handleUploadProductImage}
-          />
-        )}
+              <div className="space-y-2">
+                {categories.map((cat, index) => {
+                  const productCount = products.filter(p => p.category === cat).length;
+                  return (
+                    <div
+                      key={cat}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, cat)}
+                      onDragEnd={handleDragEnd}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, cat)}
+                      className={`glass p-4 rounded-xl flex items-center gap-3 text-sm font-medium group hover:glass-strong hover:scale-[1.02] transition-all cursor-move shadow-md border-white/40 ${draggedCategory === cat ? 'opacity-50 scale-95' : ''
+                        }`}
+                    >
+                      {/* Drag Handle Icon */}
+                      <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-secondary)' }} fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5a2 2 0 100 4 2 2 0 000-4zM8 11a2 2 0 100 4 2 2 0 000-4zM8 17a2 2 0 100 4 2 2 0 000-4zM16 5a2 2 0 100 4 2 2 0 000-4zM16 11a2 2 0 100 4 2 2 0 000-4zM16 17a2 2 0 100 4 2 2 0 000-4z" />
+                      </svg>
+
+                      {/* Position Number */}
+                      <span className="w-8 h-8 bg-gradient-pink text-white rounded-xl flex items-center justify-center text-xs font-bold shadow-lg flex-shrink-0 glow-pink">
+                        {index + 1}
+                      </span>
+
+                      {/* Category Name */}
+                      <span className="flex-grow font-semibold" style={{ color: 'var(--text-primary)' }}>{cat}</span>
+
+                      {/* Product Count Badge */}
+                      <span className={`badge-glass px-3 py-1 text-xs font-bold flex-shrink-0 ${productCount > 0
+                        ? 'bg-gradient-soft text-green-700'
+                        : 'bg-white/20'
+                        }`} style={{ color: productCount > 0 ? 'var(--primary-pink)' : 'var(--text-secondary)' }}>
+                        {productCount} SP
+                      </span>
+
+                      {/* Reorder Buttons */}
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => moveCategoryUp(index)}
+                          disabled={index === 0}
+                          className={`p-2 rounded-lg transition-all ${index === 0
+                            ? 'text-neutral-200 cursor-not-allowed'
+                            : 'text-neutral-400 hover:text-blue-600 hover:bg-blue-50'
+                            }`}
+                          title="Di chuyển lên"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 15l7-7 7 7" /></svg>
+                        </button>
+                        <button
+                          onClick={() => moveCategoryDown(index)}
+                          disabled={index === categories.length - 1}
+                          className={`p-2 rounded-lg transition-all ${index === categories.length - 1
+                            ? 'text-neutral-200 cursor-not-allowed'
+                            : 'text-neutral-400 hover:text-blue-600 hover:bg-blue-50'
+                            }`}
+                          title="Di chuyển xuống"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                      </div>
+
+                      {/* Settings Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingCategory(cat);
+                          setShowCategorySettingsModal(true);
+                        }}
+                        className="p-2 text-neutral-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all"
+                        title="Cài đặt danh mục"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </button>
+
+                      {/* Delete Button */}
+                      <button
+                        onClick={() => deleteCategory(cat)}
+                        className="p-2 text-neutral-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                        title="Xóa danh mục"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeWidth="2" strokeLinecap="round" /></svg>
+                      </button>
+                    </div>
+                  );
+                })}
+
+                {categories.length === 0 && (
+                  <div className="text-center py-8 text-neutral-400 text-sm">
+                    <svg className="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+                    Chưa có danh mục nào. Thêm danh mục đầu tiên!
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+
+
+        {/* QUẢN LÝ NHANH SẢN PHẨM */}
+        <section>
+          <div
+            className="flex justify-between items-center mb-6 cursor-pointer group glass-strong p-4 rounded-2xl"
+            onClick={() => toggleSection('inventory')}
+          >
+            <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
+              <span className="w-1.5 h-6 bg-gradient-sunset rounded-full inline-block"></span>
+              Kho hàng hiện tại ({products.length})
+            </h3>
+            <button className="pill-button glass px-4 py-2 hover:glass-strong transition-all">
+              <svg
+                className={`w-5 h-5 transition-transform duration-300 ${expandedSections.inventory ? 'rotate-180' : ''}`}
+                style={{ color: 'var(--primary-pink)' }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+
+          {expandedSections.inventory && (
+
+            <div className="space-y-8">
+              {/* Products with valid categories */}
+              {categories.map((category) => {
+                const categoryProducts = products
+                  .filter(p => p.category === category)
+                  .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+                if (categoryProducts.length === 0) return null;
+
+                return (
+                  <div key={category} className="glass-strong p-6 rounded-2xl border border-white/30 shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                        <span className="w-2 h-2 bg-gradient-pink rounded-full glow-pink"></span>
+                        {category}
+                      </h4>
+                      <span className="badge-glass bg-gradient-soft text-xs font-bold" style={{ color: 'var(--primary-pink)' }}>{categoryProducts.length} sản phẩm</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                      {categoryProducts.map(p => (
+                        <div
+                          key={p.id}
+                          draggable
+                          onDragStart={(e) => handleProductDragStart(e, p.id)}
+                          onDragEnd={handleProductDragEnd}
+                          onDragOver={handleDragOver}
+                          onDrop={(e) => handleProductDrop(e, p.id, category)}
+                          className={`relative group cursor-move ${draggedProduct === p.id ? 'opacity-50 scale-95' : ''
+                            }`}
+                        >
+                          <div className="absolute top-2 left-2 z-10 bg-neutral-900/70 text-white px-2 py-1 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                            ⋮⋮ Kéo
+                          </div>
+                          <FlowerCard
+                            product={p}
+                            isAdmin
+                            onEdit={openEditModal}
+                            globalAspectRatio={
+                              globalSettings.aspectRatio === 'custom'
+                                ? (globalSettings.customValue || '3/4').replace(/:/g, '/').replace(/x/gi, '/')
+                                : globalSettings.aspectRatio
+                            }
+                            mediaMetadata={mediaMetadata}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Products with deleted/invalid categories */}
+              {(() => {
+                const uncategorizedProducts = products.filter(p => !categories.includes(p.category));
+                if (uncategorizedProducts.length === 0) return null;
+
+                return (
+                  <div className="glass-strong p-6 rounded-2xl border-2 border-yellow-300/50 shadow-lg bg-yellow-50/20">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h4 className="font-bold flex items-center gap-2 text-yellow-700">
+                          <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
+                          ⚠️ Sản phẩm không có danh mục
+                        </h4>
+                        <p className="text-xs text-yellow-600 mt-1">
+                          Danh mục của các sản phẩm này đã bị xóa. Vui lòng chỉnh sửa để gán lại danh mục mới.
+                        </p>
+                      </div>
+                      <span className="badge-glass bg-yellow-500 text-white text-xs font-bold px-3 py-1">
+                        {uncategorizedProducts.length} sản phẩm
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                      {uncategorizedProducts.map(p => (
+                        <div key={p.id} className="relative group">
+                          <div className="absolute -top-2 -right-2 z-20 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg animate-pulse">
+                            ⚠️
+                          </div>
+                          <div className="absolute bottom-2 left-2 right-2 z-20 bg-red-500/90 text-white text-[10px] font-bold px-2 py-1 rounded text-center">
+                            Danh mục: "{p.category}" đã xóa
+                          </div>
+                          <FlowerCard
+                            product={p}
+                            isAdmin
+                            onEdit={openEditModal}
+                            globalAspectRatio={
+                              globalSettings.aspectRatio === 'custom'
+                                ? (globalSettings.customValue || '3/4').replace(/:/g, '/').replace(/x/gi, '/')
+                                : globalSettings.aspectRatio
+                            }
+                            mediaMetadata={mediaMetadata}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {products.length === 0 && (
+                <div className="text-center py-16 text-neutral-400">
+                  <svg className="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                  <p className="text-sm font-medium">Chưa có sản phẩm nào. Tạo sản phẩm đầu tiên!</p>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      </>
+    ) : activeTab === 'media' ? (
+      <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
+        <MediaLibrary
+          onMetadataChange={setMediaMetadata}
+          onImageDelete={handleImageDeletedFromLibrary}
+        />
+      </section>
+    ) : activeTab === 'css' ? (
+      <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
+        <div className="mb-6">
+          <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
+            <span className="w-1.5 h-6 bg-gradient-pink rounded-full inline-block"></span>
+            🎨 Custom CSS
+          </h3>
+          <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
+            Nhập CSS tùy chỉnh để thay đổi giao diện website. CSS sẽ được áp dụng ngay lập tức.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <div className="glass p-6 rounded-2xl">
+            <label className="block text-sm font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+              CSS Code
+            </label>
+            <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+              Ví dụ: .glass {'{ background: rgba(255, 255, 255, 0.1); }'}
+            </p>
+            <textarea
+              className="glass-input w-full rounded-2xl px-5 py-4 text-sm font-mono"
+              rows={20}
+              placeholder="/* Nhập CSS tùy chỉnh tại đây */&#10;.your-class {&#10;  color: #FF6B9D;&#10;  font-size: 16px;&#10;}"
+              value={globalSettings.customCSS}
+              onChange={(e) => {
+                const newSettings = { ...globalSettings, customCSS: e.target.value };
+                setGlobalSettings(newSettings);
+                localStorage.setItem('global_settings', JSON.stringify(newSettings));
+              }}
+              style={{
+                fontFamily: 'Monaco, Consolas, "Courier New", monospace',
+                fontSize: '13px',
+                lineHeight: '1.6'
+              }}
+            />
+          </div>
+
+          <div className="glass-pink p-4 rounded-xl">
+            <p className="text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+              💡 Mẹo sử dụng Custom CSS:
+            </p>
+            <ul className="text-xs space-y-1" style={{ color: 'var(--text-secondary)' }}>
+              <li>• CSS sẽ tự động lưu và áp dụng khi bạn nhập</li>
+              <li>• Sử dụng !important nếu cần ghi đè style mặc định</li>
+              <li>• Test trên  cả PC và Mobile để đảm bảo responsive</li>
+              <li>• Có thể tùy chỉnh: màu sắc, font chữ, khoảng cách, hiệu ứng, v.v.</li>
+            </ul>
+          </div>
+
+          {globalSettings.customCSS && (
+            <button
+              onClick={() => {
+                if (confirm('Bạn có chắc muốn xóa toàn bộ Custom CSS?')) {
+                  const newSettings = { ...globalSettings, customCSS: '' };
+                  setGlobalSettings(newSettings);
+                  localStorage.setItem('global_settings', JSON.stringify(newSettings));
+                  alert('✅ Đã xóa Custom CSS!');
+                }
+              }}
+              className="w-full py-3 bg-rose-50 text-rose-600 rounded-xl text-sm font-bold hover:bg-rose-100 transition-all"
+            >
+              🗑️ Xóa toàn bộ CSS
+            </button>
+          )}
+        </div>
+      </section>
+    ) : activeTab === 'analytics' ? (
+      <>
+        {/* Analytics Dashboard Header */}
+        <section className="glass-strong p-8 rounded-3xl border border-white/30 shadow-xl">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div>
+              <h3 className="text-lg font-bold serif-display gradient-text flex items-center gap-2">
+                <span className="w-1.5 h-6 bg-gradient-sunset rounded-full inline-block"></span>
+                📊 Bảng Tổng Quan Analytics
+              </h3>
+              <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
+                Thống kê lượt xem và tương tác của khách hàng
+              </p>
+            </div>
+
+            {/* Analytics Actions */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => {
+                  exportAnalytics();
+                  alert('✅ Đã tải xuống file analytics!');
+                }}
+                className="pill-button glass-pink px-4 py-2 text-sm font-bold hover:glass-strong transition-all"
+                title="Tải xuống dữ liệu analytics dạng JSON"
+              >
+                📥 Tải dữ liệu
+              </button>
+              <button
+                onClick={() => {
+                  clearOldAnalytics(30);
+                  alert('✅ Đã xóa dữ liệu cũ hơn 30 ngày!');
+                  window.location.reload();
+                }}
+                className="pill-button glass px-4 py-2 text-sm font-bold hover:glass-strong transition-all"
+                title="Xóa dữ liệu cũ hơn 30 ngày"
+              >
+                🗑️ Xóa dữ liệu cũ
+              </button>
+              <button
+                onClick={() => clearAllAnalytics()}
+                className="pill-button glass-pink px-4 py-2 text-sm font-bold hover:bg-rose-100 transition-all"
+                style={{ color: 'var(--primary-pink)' }}
+                title="Xóa toàn bộ dữ liệu thống kê"
+              >
+                ⚠️ Xóa tất cả
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Analytics Dashboard Component */}
+        <AnalyticsDashboard
+          analyticsData={analyticsData}
+          products={products}
+        />
+      </>
+    ) : activeTab === 'orders' ? (
+      <>
+        {/* Orders Management Component */}
+        <OrdersManagement />
+      </>
+    ) : null
+  }
+        </main >
+
+  {/* Floating Action Button - Add Product */ }
+{
+  activeTab === 'products' && (
+    <button
+      onClick={() => {
+        setEditingProduct({ title: '', category: categories[0] || '', images: [], switchInterval: 3000, aspectRatio: '3/4', originalPrice: 0, salePrice: 0 });
+        setShowEditModal(true);
+      }}
+      className="fixed bottom-8 right-8 z-50 bg-gradient-pink text-white w-16 h-16 rounded-full shadow-2xl hover-glow-pink flex items-center justify-center group hover:scale-110 active:scale-95 transition-all"
+      title="Thêm sản phẩm mới"
+    >
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" />
+      </svg>
+      {/* Tooltip */}
+      <span className="absolute -top-12 right-0 bg-neutral-900 text-white text-xs font-bold px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+        ✨ Thêm sản phẩm mới
+      </span>
+    </button>
+  )
+}
+
+{/* MODAL SỬA TÊN DANH MỤC */ }
+{
+  showCategoryEditModal && editingCategory && (
+    <CategoryEditModal
+      categoryName={editingCategory}
+      displayName={categorySettings[editingCategory]?.displayName}
+      onSave={renameCategoryInSettings}
+      onClose={closeCategoryEditModal}
+    />
+  )
+}
+
+{/* MODAL CÀI ĐẶT DANH MỤC */ }
+{
+  showCategorySettingsModal && editingCategory && (
+    <CategorySettingsModal
+      categoryName={editingCategory}
+      settings={categorySettings[editingCategory] || {
+        name: editingCategory,
+        itemsPerPage: 8,
+        paginationType: 'none',
+        imageTransition: 'fade',
+        imageInterval: 3000
+      }}
+      onUpdate={(updates) => updateCategorySettings(editingCategory, updates)}
+      onClose={() => setShowCategorySettingsModal(false)}
+      onRename={() => {
+        setShowCategorySettingsModal(false);
+        setShowCategoryEditModal(true);
+      }}
+    />
+  )
+}
+
+{/* MODAL PRODUCT FORM - NEW WITH VARIANTS */ }
+{
+  showEditModal && (
+    <ProductFormModal
+      product={editingProduct as FlowerProduct | null}
+      categories={categories}
+      onSave={handleAddOrUpdateProduct}
+      onCancel={closeEditModal}
+      onDelete={deleteProduct}
+      onUploadImage={handleUploadProductImage}
+    />
+  )
+}
       </div >
     );
   }
 
-  // GIAO DIỆN NGƯỜI DÙNG (TRANG CHỦ)
-  return (
-    <div className="min-h-screen bg-pattern">
-      <header className="blur-backdrop fixed top-0 left-0 right-0 z-50 border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.location.href = '/'}>
-            {/* Mobile Menu Button */}
-            <div className="lg:hidden">
-              <button
-                onClick={(e) => { e.stopPropagation(); setIsMobileMenuOpen(true); }}
-                className="p-2 -ml-2 text-neutral-600 hover:text-rose-500 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
-              </button>
-            </div>
-
-            {globalSettings.logoUrl ? (
-              <>
-                <img
-                  src={globalSettings.logoUrl}
-                  alt={globalSettings.websiteName}
-                  className={`w-auto object-contain hidden sm:block ${globalSettings.logoSizeDesktop}`}
-                />
-                <img
-                  src={globalSettings.logoUrl}
-                  alt={globalSettings.websiteName}
-                  className={`w-auto object-contain sm:hidden ${globalSettings.logoSizeMobile}`}
-                />
-              </>
-            ) : (
-              <>
-                <div className="w-10 h-10 bg-gradient-pink rounded-2xl flex items-center justify-center shadow-lg glow-pink rotate-6">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 21l-8.228-3.69L2 7l7.662-3.11a2 2 0 011.676 0L19 7l-1.772 10.31L12 21z" /></svg>
-                </div>
-                <h1 className="text-xl font-bold tracking-tight gradient-text uppercase serif-display hidden sm:block">{globalSettings.websiteName}</h1>
-                <h1 className="text-xl font-bold tracking-tight gradient-text uppercase serif-display sm:hidden">{globalSettings.websiteName?.split(' ')[0] || 'Shop'}</h1>
-              </>
-            )}
+// GIAO DIỆN NGƯỜI DÙNG (TRANG CHỦ)
+return (
+  <div className="min-h-screen bg-pattern">
+    <header className="blur-backdrop fixed top-0 left-0 right-0 z-50 border-b border-white/20">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.location.href = '/'}>
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden">
+            <button
+              onClick={(e) => { e.stopPropagation(); setIsMobileMenuOpen(true); }}
+              className="p-2 -ml-2 text-neutral-600 hover:text-rose-500 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
           </div>
 
-          <nav className="hidden lg:flex gap-6 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-            {categories.map((cat) => (
-              <a
+          {globalSettings.logoUrl ? (
+            <>
+              <img
+                src={globalSettings.logoUrl}
+                alt={globalSettings.websiteName}
+                className={`w-auto object-contain hidden sm:block ${globalSettings.logoSizeDesktop}`}
+              />
+              <img
+                src={globalSettings.logoUrl}
+                alt={globalSettings.websiteName}
+                className={`w-auto object-contain sm:hidden ${globalSettings.logoSizeMobile}`}
+              />
+            </>
+          ) : (
+            <>
+              <div className="w-10 h-10 bg-gradient-pink rounded-2xl flex items-center justify-center shadow-lg glow-pink rotate-6">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 21l-8.228-3.69L2 7l7.662-3.11a2 2 0 011.676 0L19 7l-1.772 10.31L12 21z" /></svg>
+              </div>
+              <h1 className="text-xl font-bold tracking-tight gradient-text uppercase serif-display hidden sm:block">{globalSettings.websiteName}</h1>
+              <h1 className="text-xl font-bold tracking-tight gradient-text uppercase serif-display sm:hidden">{globalSettings.websiteName?.split(' ')[0] || 'Shop'}</h1>
+            </>
+          )}
+        </div>
+
+        <nav className="hidden lg:flex gap-6 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+          {categories.map((cat) => (
+            <a
+              key={cat}
+              href={`#${cat}`}
+              onClick={(e) => { e.preventDefault(); scrollToCategory(cat); }}
+              className="hover:text-[var(--primary-pink)] transition-all hover:scale-105 whitespace-nowrap"
+            >
+              {categorySettings[cat]?.displayName || cat}
+            </a>
+          ))}
+        </nav>
+      </div>
+    </header>
+
+    {/* Mobile Menu Overlay */}
+    {isMobileMenuOpen && (
+      <div className="fixed inset-0 z-[100] lg:hidden">
+        {/* Backdrop */}
+        <div className="absolute inset-0 modal-backdrop-glass transition-opacity" onClick={() => setIsMobileMenuOpen(false)}></div>
+
+        {/* Drawer */}
+        <div className="absolute top-0 left-0 bottom-0 w-[280px] glass-strong shadow-2xl p-6 flex flex-col animate-in slide-in-from-left duration-300">
+          <div className="flex justify-center items-center mb-8 pb-4 border-b border-white/20 relative">
+            <span className="font-bold serif-display text-lg gradient-text">{globalSettings.websiteName}</span>
+            <button onClick={() => setIsMobileMenuOpen(false)} className="absolute right-0 p-2 glass rounded-full hover:bg-white/30 transition-all" style={{ color: 'var(--text-secondary)' }}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-2 overflow-y-auto">
+            <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-secondary)' }}>Danh mục sản phẩm</div>
+            {categories.map(cat => (
+              <button
                 key={cat}
-                href={`#${cat}`}
-                onClick={(e) => { e.preventDefault(); scrollToCategory(cat); }}
-                className="hover:text-[var(--primary-pink)] transition-all hover:scale-105 whitespace-nowrap"
+                onClick={() => scrollToCategory(cat)}
+                className="text-left py-3 px-4 rounded-xl font-semibold glass hover:bg-gradient-soft hover:text-[var(--primary-pink)] transition-all flex justify-between items-center group"
+                style={{ color: 'var(--text-primary)' }}
               >
                 {categorySettings[cat]?.displayName || cat}
-              </a>
-            ))}
-          </nav>
-        </div>
-      </header>
-
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] lg:hidden">
-          {/* Backdrop */}
-          <div className="absolute inset-0 modal-backdrop-glass transition-opacity" onClick={() => setIsMobileMenuOpen(false)}></div>
-
-          {/* Drawer */}
-          <div className="absolute top-0 left-0 bottom-0 w-[280px] glass-strong shadow-2xl p-6 flex flex-col animate-in slide-in-from-left duration-300">
-            <div className="flex justify-center items-center mb-8 pb-4 border-b border-white/20 relative">
-              <span className="font-bold serif-display text-lg gradient-text">{globalSettings.websiteName}</span>
-              <button onClick={() => setIsMobileMenuOpen(false)} className="absolute right-0 p-2 glass rounded-full hover:bg-white/30 transition-all" style={{ color: 'var(--text-secondary)' }}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
               </button>
-            </div>
-
-            <div className="flex flex-col gap-2 overflow-y-auto">
-              <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--text-secondary)' }}>Danh mục sản phẩm</div>
-              {categories.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => scrollToCategory(cat)}
-                  className="text-left py-3 px-4 rounded-xl font-semibold glass hover:bg-gradient-soft hover:text-[var(--primary-pink)] transition-all flex justify-between items-center group"
-                  style={{ color: 'var(--text-primary)' }}
-                >
-                  {categorySettings[cat]?.displayName || cat}
-                  <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
-                </button>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
-      )}
+      </div>
+    )}
 
-      <main className="max-w-7xl mx-auto px-4 py-8 mt-16">
-        {categories.map((category) => {
-          // Support both old single category and new multiple categories
-          const categoryProducts = products.filter(f => {
-            if (f.categories && f.categories.length > 0) {
-              return f.categories.includes(category);
-            }
-            return f.category === category;
-          });
-          if (categoryProducts.length === 0) return null;
+    <main className="max-w-7xl mx-auto px-4 py-8 mt-16">
+      {categories.map((category) => {
+        // Support both old single category and new multiple categories
+        const categoryProducts = products.filter(f => {
+          if (f.categories && f.categories.length > 0) {
+            return f.categories.includes(category);
+          }
+          return f.category === category;
+        });
+        if (categoryProducts.length === 0) return null;
 
-          const settings = categorySettings[category] || {
-            name: category,
-            itemsPerPage: 8,
-            paginationType: 'none' as PaginationType,
-            imageTransition: 'fade' as ImageTransitionEffect
-          };
+        const settings = categorySettings[category] || {
+          name: category,
+          itemsPerPage: 8,
+          paginationType: 'none' as PaginationType,
+          imageTransition: 'fade' as ImageTransitionEffect
+        };
 
-          const currentPage = categoryPages[category] || 1;
-          const currentAspectRatio = globalSettings.aspectRatio === 'custom'
-            ? (globalSettings.customValue || '3/4').replace(/:/g, '/').replace(/x/gi, '/')
-            : globalSettings.aspectRatio;
+        const currentPage = categoryPages[category] || 1;
+        const currentAspectRatio = globalSettings.aspectRatio === 'custom'
+          ? (globalSettings.customValue || '3/4').replace(/:/g, '/').replace(/x/gi, '/')
+          : globalSettings.aspectRatio;
 
-          return (
-            <CategorySection
-              key={category}
-              category={category}
-              settings={settings}
-              products={categoryProducts}
-              currentPage={currentPage}
-              globalAspectRatio={currentAspectRatio || '3/4'}
-              mediaMetadata={mediaMetadata}
-              onLoadMore={() => loadMoreProducts(category)}
-              onPageChange={(page) => setCategoryPages(prev => ({ ...prev, [category]: page }))}
-              onImageClick={(images, index) => openLightbox(images, index)}
-              showSKU={globalSettings.showSKU}
-              zaloLink={globalSettings.zaloLink}
-              enablePriceDisplay={globalSettings.enablePriceDisplay}
-              onOrderClick={(product) => setOrderModalProduct(product)}
-            />
-          );
-        })}
-      </main>
+        return (
+          <CategorySection
+            key={category}
+            category={category}
+            settings={settings}
+            products={categoryProducts}
+            currentPage={currentPage}
+            globalAspectRatio={currentAspectRatio || '3/4'}
+            mediaMetadata={mediaMetadata}
+            onLoadMore={() => loadMoreProducts(category)}
+            onPageChange={(page) => setCategoryPages(prev => ({ ...prev, [category]: page }))}
+            onImageClick={(images, index) => openLightbox(images, index)}
+            showSKU={globalSettings.showSKU}
+            zaloLink={globalSettings.zaloLink}
+            enablePriceDisplay={globalSettings.enablePriceDisplay}
+            onOrderClick={(product) => setOrderModalProduct(product)}
+          />
+        );
+      })}
+    </main>
 
-      {globalSettings.enableLightbox && (
-        <ImageLightbox
-          images={lightboxData.images}
-          initialIndex={lightboxData.index}
-          isOpen={lightboxData.isOpen}
-          onClose={() => setLightboxData(prev => ({ ...prev, isOpen: false }))}
-          productTitle={lightboxData.productTitle}
-          productSKU={lightboxData.productSKU}
-          variants={lightboxData.variants}
-        />
-      )}
+    {globalSettings.enableLightbox && (
+      <ImageLightbox
+        images={lightboxData.images}
+        initialIndex={lightboxData.index}
+        isOpen={lightboxData.isOpen}
+        onClose={() => setLightboxData(prev => ({ ...prev, isOpen: false }))}
+        productTitle={lightboxData.productTitle}
+        productSKU={lightboxData.productSKU}
+        variants={lightboxData.variants}
+      />
+    )}
 
-      {/* Product Order Modal */}
-      {orderModalProduct && (
-        <ProductOrderModal
-          product={orderModalProduct}
-          onClose={() => setOrderModalProduct(null)}
-          mediaMetadata={mediaMetadata}
-        />
-      )}
+    {/* Product Order Modal */}
+    {orderModalProduct && (
+      <ProductOrderModal
+        product={orderModalProduct}
+        onClose={() => setOrderModalProduct(null)}
+        mediaMetadata={mediaMetadata}
+      />
+    )}
 
-      <footer className="bg-neutral-50 border-t border-neutral-200 py-12">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h4 className="font-bold text-xl mb-3 serif text-rose-600">{globalSettings.websiteName}</h4>
-          <p className="text-neutral-500 text-sm leading-relaxed max-w-2xl mx-auto">
-            Tiệm hoa cao cấp - Nơi khởi nguồn của những cảm xúc chân thành nhất qua từng đóa hoa tươi.
-          </p>
-          <p className="text-neutral-400 text-xs mt-6">© 2024 {globalSettings.websiteName}. All rights reserved.</p>
-        </div>
-      </footer>
+    <footer className="bg-neutral-50 border-t border-neutral-200 py-12">
+      <div className="max-w-7xl mx-auto px-4 text-center">
+        <h4 className="font-bold text-xl mb-3 serif text-rose-600">{globalSettings.websiteName}</h4>
+        <p className="text-neutral-500 text-sm leading-relaxed max-w-2xl mx-auto">
+          Tiệm hoa cao cấp - Nơi khởi nguồn của những cảm xúc chân thành nhất qua từng đóa hoa tươi.
+        </p>
+        <p className="text-neutral-400 text-xs mt-6">© 2024 {globalSettings.websiteName}. All rights reserved.</p>
+      </div>
+    </footer>
 
-      {/* NÚT GỌI ĐIỆN NỔI - Phía trên */}
-      <a href={`tel:${globalSettings.phoneNumber}`} className="fixed bottom-24 right-4 z-50 group">
-        <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all relative">
-          <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z" />
-          </svg>
-          <div className="absolute inset-0 w-14 h-14 bg-green-500 rounded-full animate-ping opacity-20 -z-10"></div>
-        </div>
-      </a>
+    {/* NÚT GỌI ĐIỆN NỔI - Phía trên */}
+    <a href={`tel:${globalSettings.phoneNumber}`} className="fixed bottom-24 right-4 z-50 group">
+      <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all relative">
+        <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z" />
+        </svg>
+        <div className="absolute inset-0 w-14 h-14 bg-green-500 rounded-full animate-ping opacity-20 -z-10"></div>
+      </div>
+    </a>
 
-      {/* NÚT ZALO NỔI - Phía dưới */}
-      <a href={globalSettings.zaloLink} target="_blank" className="fixed bottom-6 right-4 z-50 group">
-        <div className="w-14 h-14 bg-[#0068ff] rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all relative">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Icon_of_Zalo.svg/1200px-Icon_of_Zalo.svg.png" className="w-9 h-9" alt="Zalo" />
-          <div className="absolute inset-0 w-14 h-14 bg-[#0068ff] rounded-full animate-ping opacity-20 -z-10"></div>
-        </div>
-      </a>
-    </div >
-  );
+    {/* NÚT ZALO NỔI - Phía dưới */}
+    <a href={globalSettings.zaloLink} target="_blank" className="fixed bottom-6 right-4 z-50 group">
+      <div className="w-14 h-14 bg-[#0068ff] rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all relative">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Icon_of_Zalo.svg/1200px-Icon_of_Zalo.svg.png" className="w-9 h-9" alt="Zalo" />
+        <div className="absolute inset-0 w-14 h-14 bg-[#0068ff] rounded-full animate-ping opacity-20 -z-10"></div>
+      </div>
+    </a>
+  </div >
+);
 };
 
 export default App;
